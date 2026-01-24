@@ -12,19 +12,19 @@ export class ReportsController {
 
   @Get('low-stock')
   @ApiOperation({ 
-    summary: 'Alerta de stock bajo',
-    description: 'Retorna productos donde stock_actual <= stock_minimo. Usar para alertas de recompra.' 
+    summary: 'Obtener productos con stock bajo (alerta de recompra)',
+    description: 'Retorna productos donde stock_actual <= stock_minimo. Útil para generar alertas de recompra y mantener inventario óptimo.' 
   })
   @ApiResponse({ 
     status: 200, 
-    description: 'Lista de productos con stock bajo',
+    description: 'Lista de productos con stock bajo retornada exitosamente',
     schema: {
       example: {
         total_alertas: 2,
-        fecha_consulta: '2026-01-23T10:30:00.000Z',
+        fecha_consulta: '2026-01-24T10:30:00.000Z',
         productos: [
           {
-            id: 'uuid',
+            id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
             sku: 'F-002',
             nombre: 'Disco Ventilado',
             marca: 'Brembo',
@@ -38,36 +38,37 @@ export class ReportsController {
       }
     }
   })
+  @ApiResponse({ status: 401, description: 'Token JWT no proporcionado o inválido' })
   getLowStock() {
     return this.reportsService.getLowStock();
   }
 
   @Get('daily-cash')
   @ApiOperation({ 
-    summary: 'Caja diaria',
+    summary: 'Obtener resumen de caja diaria',
     description: `
-Retorna el resumen de ingresos del día.
+Retorna el resumen de ingresos del día especificado o del día actual.
 
-**Incluye:**
-- total_taller: Suma de WorkOrders
-- total_meson: Suma de CounterSales tipo VENTA
-- total_final: Suma de ambos
+**Cálculo de totales:**
+- **total_taller:** Suma de todas las WorkOrders del día
+- **total_meson:** Suma de CounterSales tipo VENTA únicamente
+- **total_final:** total_taller + total_meson
 
-**Nota:** Solo cuenta CounterSales tipo VENTA, no PERDIDA ni USO_INTERNO.
+**Importante:** Las PERDIDAS y USO_INTERNO no suman a la caja, solo las VENTAS.
     ` 
   })
   @ApiQuery({ 
     name: 'fecha', 
     required: false, 
-    example: '2026-01-22',
-    description: 'Fecha en formato YYYY-MM-DD. Si no se envía, usa la fecha actual.' 
+    example: '2026-01-24',
+    description: 'Fecha en formato YYYY-MM-DD. Si no se envía, usa la fecha actual del servidor.' 
   })
   @ApiResponse({ 
     status: 200, 
-    description: 'Resumen de caja del día',
+    description: 'Resumen de caja del día retornado exitosamente',
     schema: {
       example: {
-        fecha: '2026-01-23',
+        fecha: '2026-01-24',
         total_taller: 350000,
         cantidad_ordenes: 5,
         total_meson: 85000,
@@ -76,31 +77,43 @@ Retorna el resumen de ingresos del día.
       }
     }
   })
+  @ApiResponse({ 
+    status: 400, 
+    description: 'Formato de fecha inválido',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: 'Formato de fecha inválido. Use YYYY-MM-DD',
+        error: 'Bad Request'
+      }
+    }
+  })
+  @ApiResponse({ status: 401, description: 'Token JWT no proporcionado o inválido' })
   getDailyCash(@Query('fecha') fecha?: string) {
     return this.reportsService.getDailyCash(fecha);
   }
 
   @Get('search')
   @ApiOperation({ 
-    summary: 'Buscador global',
+    summary: 'Buscador global de clientes, vehículos y órdenes',
     description: `
 Busca en múltiples entidades simultáneamente:
 - **Clientes:** por nombre o RUT
 - **Vehículos:** por patente
-- **Órdenes:** por patente del vehículo
+- **Órdenes:** por patente del vehículo asociado
 
-Útil para acceso rápido al historial de un cliente.
+Útil para acceso rápido al historial de un cliente o vehículo.
     ` 
   })
   @ApiQuery({ 
     name: 'q', 
     required: true, 
     example: 'Juan',
-    description: 'Texto a buscar (mínimo 2 caracteres)' 
+    description: 'Texto a buscar (mínimo 2 caracteres). Busca en nombres, RUT y patentes.' 
   })
   @ApiResponse({ 
     status: 200, 
-    description: 'Resultados de búsqueda agrupados',
+    description: 'Resultados de búsqueda agrupados por entidad',
     schema: {
       example: {
         busqueda: 'Juan',
@@ -115,6 +128,18 @@ Busca en múltiples entidades simultáneamente:
       }
     }
   })
+  @ApiResponse({ 
+    status: 400, 
+    description: 'Query muy corta o vacía',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: 'La búsqueda debe tener al menos 2 caracteres',
+        error: 'Bad Request'
+      }
+    }
+  })
+  @ApiResponse({ status: 401, description: 'Token JWT no proporcionado o inválido' })
   globalSearch(@Query('q') query: string) {
     return this.reportsService.globalSearch(query);
   }

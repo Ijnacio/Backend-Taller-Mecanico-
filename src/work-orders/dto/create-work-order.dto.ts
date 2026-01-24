@@ -1,4 +1,4 @@
-import { IsString, IsInt, IsArray, ValidateNested, IsOptional, IsEmail } from 'class-validator';
+import { IsString, IsInt, IsArray, ValidateNested, IsOptional, IsEmail, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -16,13 +16,15 @@ class WorkOrderItemDto {
   })
   @IsString()
   @IsOptional()
-  descripcion: string;
+  descripcion?: string;
 
   @ApiProperty({ 
     example: 45000, 
-    description: 'Monto cobrado por este servicio en pesos (CLP)' 
+    description: 'Monto cobrado por este servicio en pesos (CLP)',
+    minimum: 0
   })
   @IsInt()
+  @Min(0, { message: 'El precio no puede ser negativo' })
   precio: number;
 
   @ApiPropertyOptional({ 
@@ -31,15 +33,17 @@ class WorkOrderItemDto {
   })
   @IsString()
   @IsOptional()
-  product_sku: string;
+  product_sku?: string;
 
   @ApiPropertyOptional({ 
     example: 1, 
-    description: 'Cantidad de productos usados (default: 1)' 
+    description: 'Cantidad de productos usados (default: 1)',
+    minimum: 1
   })
   @IsInt()
+  @Min(1, { message: 'La cantidad debe ser al menos 1' })
   @IsOptional()
-  cantidad_producto: number;
+  cantidad_producto?: number;
 }
 
 class ClientDto {

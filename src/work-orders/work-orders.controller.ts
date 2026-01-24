@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { WorkOrdersService } from './work-orders.service';
 import { CreateWorkOrderDto } from './dto/create-work-order.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -13,13 +13,15 @@ export class WorkOrdersController {
 
   @Get('services-catalog')
   @ApiOperation({ 
-    summary: 'Catálogo de servicios disponibles',
-    description: 'Retorna la lista de servicios que se pueden seleccionar en el formulario. Usar para poblar selectores/checkboxes.' 
+    summary: 'Obtener catálogo de servicios disponibles',
+    description: 'Retorna la lista completa de servicios que se pueden seleccionar en el formulario de órdenes. Útil para poblar selectores y checkboxes en el frontend.' 
   })
   @ApiResponse({ 
     status: 200, 
-    description: 'Lista de servicios disponibles',
+    description: 'Lista de servicios disponibles retornada exitosamente',
     schema: {
+      type: 'array',
+      items: { type: 'string' },
       example: [
         'Cambio Pastillas',
         'Cambio Discos',
@@ -33,34 +35,37 @@ export class WorkOrdersController {
       ]
     }
   })
+  @ApiResponse({ status: 401, description: 'Token JWT no proporcionado o inválido' })
   getServicesCatalog() {
     return this.workOrdersService.getServicesList();
   }
 
   @Post()
   @ApiOperation({ 
-    summary: 'Crear orden de trabajo',
+    summary: 'Crear una nueva orden de trabajo',
     description: `
-Crea una nueva orden de trabajo con cliente, vehículo y servicios.
+Crea una nueva orden de trabajo con cliente, vehículo y servicios realizados.
 
 **Lógica automática:**
 - Si el cliente (RUT) ya existe, se reutiliza y actualiza sus datos
 - Si el vehículo (patente) ya existe, se reutiliza y actualiza kilometraje
-- Si un item tiene product_sku, descuenta stock automáticamente
-- Calcula total_cobrado sumando todos los precios
+- Si un item tiene product_sku, descuenta stock automáticamente del inventario
+- Calcula total_cobrado sumando todos los precios de items
 
 **Validaciones:**
-- numero_orden_papel debe ser único
-- Si usa producto, valida stock suficiente
+- numero_orden_papel debe ser único (no repetir números de talón)
+- Si usa producto, valida que exista y tenga stock suficiente
+- Los precios no pueden ser negativos
     ` 
   })
+  @ApiBody({ type: CreateWorkOrderDto })
   @ApiResponse({ 
     status: 201, 
-    description: 'Orden creada exitosamente',
+    description: 'Orden de trabajo creada exitosamente con descuento de stock aplicado',
     schema: {
       example: {
         message: 'Orden de trabajo creada exitosamente',
-        id: 'uuid-orden',
+        id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
         numero_orden_papel: 1547,
         total_cobrado: 125000,
         cliente: 'Juan Pérez',
@@ -69,21 +74,46 @@ Crea una nueva orden de trabajo con cliente, vehículo y servicios.
       }
     }
   })
-  @ApiResponse({ status: 400, description: 'Stock insuficiente o producto no existe' })
-  @ApiResponse({ status: 401, description: 'Token JWT requerido' })
+  @ApiResponse({ 
+    status: 400, 
+    description: 'Error de validación: stock insuficiente, producto no existe, número de orden duplicado o datos inválidos',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: 'Stock insuficiente para Disco Ventilado. Disponible: 2, Solicitado: 5',
+        error: 'Bad Request'
+      }
+    }
+  })
+  @ApiResponse({ status: 401, description: 'Token JWT no proporcionado o inválido' })
+  @ApiResponse({ status: 403, description: 'Usuario no tiene permisos para esta operación' })
   create(@Body() createWorkOrderDto: CreateWorkOrderDto) {
     return this.workOrdersService.create(createWorkOrderDto);
   }
 
   @Get()
   @ApiOperation({ 
-    summary: 'Listar todas las órdenes',
-    description: 'Retorna todas las órdenes de trabajo con cliente y detalles. Ordenadas por fecha descendente.' 
+    summary: 'Listar todas las órdenes de trabajo',
+    description: 'Retorna todas las órdenes de trabajo con información del cliente, vehículo y detalles de servicios. Las órdenes se ordenan por fecha de creación descendente (más recientes primero).' 
   })
   @ApiResponse({ 
     status: 200, 
-    description: 'Lista de órdenes de trabajo' 
+    description: 'Lista de órdenes de trabajo retornada exitosamente',
+    schema: {
+      type: 'array',
+      example: [{
+        id: 'uuid',
+        numero_orden_papel: 1547,
+        total_cobrado: 125000,
+        realizado_por: 'Carlos González',
+        fecha_creacion: '2026-01-24T10:30:00.000Z',
+        cliente: { nombre: 'Juan Pérez', rut: '12345678-9' },
+        vehiculo: { patente: 'ABCD12', marca: 'Toyota' },
+        items: []
+      }]
+    }
   })
+  @ApiResponse({ status: 401, description: 'Token JWT no proporcionado o inválido' })
   findAll() {
     return this.workOrdersService.findAll();
   }
