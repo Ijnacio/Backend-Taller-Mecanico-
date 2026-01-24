@@ -12,6 +12,7 @@ import { CreatePurchaseDto } from './dto/create-purchase.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { UserRole } from '../users/enums/user-role.enum';
 import {
   ApiBearerAuth,
@@ -37,8 +38,11 @@ export class PurchasesController {
   @ApiResponse({ status: 400, description: 'Datos inválidos' })
   @ApiResponse({ status: 401, description: 'No autenticado' })
   @ApiResponse({ status: 403, description: 'Solo ADMIN puede crear compras' })
-  create(@Body() createPurchaseDto: CreatePurchaseDto) {
-    return this.purchasesService.create(createPurchaseDto);
+  create(
+    @Body() createPurchaseDto: CreatePurchaseDto,
+    @CurrentUser() user: { userId: string; nombre: string },
+  ) {
+    return this.purchasesService.create(createPurchaseDto, user.nombre);
   }
 
   @Get()

@@ -11,6 +11,7 @@ import { CounterSalesService } from './counter-sales.service';
 import { CreateCounterSaleDto } from './dto/create-counter-sale.dto';
 import { MovementType } from './enums/movement-type.enum';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
 @ApiTags('💰 Ventas Mostrador')
 @ApiBearerAuth()
@@ -73,8 +74,11 @@ Registra salidas de inventario que NO son órdenes de trabajo.
     status: 403,
     description: 'Usuario no tiene permisos para esta operación',
   })
-  create(@Body() createCounterSaleDto: CreateCounterSaleDto) {
-    return this.counterSalesService.create(createCounterSaleDto);
+  create(
+    @Body() createCounterSaleDto: CreateCounterSaleDto,
+    @CurrentUser() user: { userId: string; nombre: string },
+  ) {
+    return this.counterSalesService.create(createCounterSaleDto, user.nombre);
   }
 
   @Get()

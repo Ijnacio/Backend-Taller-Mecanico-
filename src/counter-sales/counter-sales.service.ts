@@ -27,7 +27,10 @@ import { MovementType } from './enums/movement-type.enum';
 export class CounterSalesService {
   constructor(private dataSource: DataSource) {}
 
-  async create(createCounterSaleDto: CreateCounterSaleDto) {
+  async create(
+    createCounterSaleDto: CreateCounterSaleDto,
+    createdByName?: string,
+  ) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -117,6 +120,9 @@ export class CounterSalesService {
 
       counterSale.total_venta = totalVenta;
       counterSale.costo_perdida = costoPerdida;
+
+      // AUDITORÍA: Guardar quién registró el movimiento
+      counterSale.createdByName = createdByName || 'WORKER';
 
       // Guardar todo
       await queryRunner.manager.save(counterSale);

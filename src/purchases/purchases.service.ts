@@ -11,7 +11,7 @@ import { Vehicle } from '../vehicles/entities/vehicle.entity';
 export class PurchasesService {
   constructor(private dataSource: DataSource) {}
 
-  async create(createPurchaseDto: CreatePurchaseDto) {
+  async create(createPurchaseDto: CreatePurchaseDto, createdByName?: string) {
     // FIX AUDITORIA 2: Validar proveedor
     if (
       !createPurchaseDto.proveedor_nombre ||
@@ -138,6 +138,9 @@ export class PurchasesService {
         purchase.monto_iva = 0;
         purchase.monto_total = sumaTotalGasto;
       }
+
+      // AUDITORÍA: Guardar quién registró la compra
+      purchase.createdByName = createdByName || 'ADMIN';
 
       await queryRunner.manager.save(purchase);
 

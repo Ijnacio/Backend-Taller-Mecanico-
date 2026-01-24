@@ -3,6 +3,7 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
+  UpdateDateColumn,
   OneToMany,
 } from 'typeorm';
 import { MovementType } from '../enums/movement-type.enum';
@@ -33,6 +34,16 @@ export class CounterSale {
 
   @Column({ nullable: true })
   comprador: string; // Nombre del cliente (solo VENTA)
+
+  // AUDITORÍA
+  @Column({ nullable: true })
+  createdByName: string; // Nombre del usuario que registró (trabajador)
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 
   @OneToMany(() => CounterSaleDetail, (detail) => detail.counterSale, {
     cascade: true,

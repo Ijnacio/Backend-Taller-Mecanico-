@@ -3,12 +3,13 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
+  UpdateDateColumn,
   ManyToOne,
   OneToMany,
   Index,
 } from 'typeorm';
 import { Provider } from '../../providers/entities/provider.entity';
-import { PurchaseDetail } from '././purchase-detail.entity'; // <--- OJO: Nueva entidad abajo
+import { PurchaseDetail } from '././purchase-detail.entity';
 
 @Entity()
 export class Purchase {
@@ -31,6 +32,16 @@ export class Purchase {
 
   @Column('int', { default: 0 })
   monto_total: number; // Lo que realmente pagó la señora
+
+  // AUDITORÍA
+  @Column({ nullable: true })
+  createdByName: string; // Nombre del usuario que registró
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 
   @ManyToOne(() => Provider, (provider) => provider.compras)
   proveedor: Provider;

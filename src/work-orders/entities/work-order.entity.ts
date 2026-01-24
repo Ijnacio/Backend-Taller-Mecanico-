@@ -5,6 +5,7 @@ import {
   ManyToOne,
   OneToMany,
   CreateDateColumn,
+  UpdateDateColumn,
   Index,
 } from 'typeorm';
 import { Client } from '../../clients/entities/client.entity';
@@ -41,6 +42,16 @@ export class WorkOrder {
 
   @Column({ nullable: true })
   kilometraje: number; // El kilometraje al momento de la orden
+
+  // AUDITORÍA
+  @Column({ nullable: true })
+  createdByName: string; // Nombre del usuario que registró (trabajador)
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 
   // === RELACIONES ===
   @ManyToOne(() => Client, { nullable: false })

@@ -28,7 +28,7 @@ import { WORK_ORDER_SERVICES } from './constants/services.constant';
 export class WorkOrdersService {
   constructor(private dataSource: DataSource) {}
 
-  async create(createWorkOrderDto: CreateWorkOrderDto) {
+  async create(createWorkOrderDto: CreateWorkOrderDto, createdByName?: string) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -164,6 +164,9 @@ export class WorkOrdersService {
       }
 
       order.total_cobrado = totalOrden;
+
+      // AUDITORÍA: Guardar quién registró la orden
+      order.createdByName = createdByName || 'WORKER';
 
       // Guardar todo
       await queryRunner.manager.save(order);

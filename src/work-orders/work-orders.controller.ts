@@ -9,6 +9,7 @@ import {
 import { WorkOrdersService } from './work-orders.service';
 import { CreateWorkOrderDto } from './dto/create-work-order.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
 @ApiTags('📋 Órdenes de Trabajo')
 @ApiBearerAuth()
@@ -106,8 +107,11 @@ Crea una nueva orden de trabajo con cliente, vehículo y servicios realizados.
     status: 403,
     description: 'Usuario no tiene permisos para esta operación',
   })
-  create(@Body() createWorkOrderDto: CreateWorkOrderDto) {
-    return this.workOrdersService.create(createWorkOrderDto);
+  create(
+    @Body() createWorkOrderDto: CreateWorkOrderDto,
+    @CurrentUser() user: { userId: string; nombre: string },
+  ) {
+    return this.workOrdersService.create(createWorkOrderDto, user.nombre);
   }
 
   @Get()
