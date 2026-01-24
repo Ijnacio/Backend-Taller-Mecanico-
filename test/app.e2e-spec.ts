@@ -539,7 +539,31 @@ describe('🧪 Taller Frenos Aguilera - Suite E2E Completa', () => {
         .get('/api/purchases')
         .set('Authorization', `Bearer ${loginRes.body.access_token}`);
 
-      expect(res.status).toBe(200);
+      expect(res.status).toBe(403); // Ahora WORKER NO puede ver compras
+    });
+
+    it('WORKER NO puede ver proveedores (información sensible)', async () => {
+      const loginRes = await request(app.getHttpServer())
+        .post('/api/auth/login')
+        .send({ rut: '22.222.222-2', password: 'worker123' });
+
+      const res = await request(app.getHttpServer())
+        .get('/api/providers')
+        .set('Authorization', `Bearer ${loginRes.body.access_token}`);
+
+      expect(res.status).toBe(403); // Forbidden - WORKER no ve proveedores
+    });
+
+    it('WORKER puede listar clientes (para órdenes de trabajo)', async () => {
+      const loginRes = await request(app.getHttpServer())
+        .post('/api/auth/login')
+        .send({ rut: '22.222.222-2', password: 'worker123' });
+
+      const res = await request(app.getHttpServer())
+        .get('/api/clients')
+        .set('Authorization', `Bearer ${loginRes.body.access_token}`);
+
+      expect(res.status).toBe(200); // WORKER SÍ puede ver clientes
     });
   });
 

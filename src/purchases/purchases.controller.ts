@@ -42,7 +42,9 @@ export class PurchasesController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Listar todas las compras' })
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Listar todas las compras (solo ADMIN)' })
+  @ApiResponse({ status: 403, description: 'Solo ADMIN puede ver compras' })
   findAll() {
     return this.purchasesService.findAll();
   }
