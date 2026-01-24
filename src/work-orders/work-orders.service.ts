@@ -1,7 +1,7 @@
 /**
  * CONTEXTO: Sistema de Taller Mecánico "Frenos Aguilera".
  * OBJETIVO: Crear una Orden de Trabajo (WorkOrder) que replique un formulario de papel físico.
- * 
+ *
  * REGLAS DE NEGOCIO:
  * 1. Cliente: Se debe buscar por RUT o Email. Si no existe, se crea.
  * 2. Vehículo: Se busca por Patente. Si no existe, se crea/actualiza.
@@ -34,25 +34,40 @@ export class WorkOrdersService {
     await queryRunner.startTransaction();
 
     try {
-      const { cliente: clienteDto, vehiculo: vehiculoDto, items, numero_orden_papel, realizado_por, revisado_por } = createWorkOrderDto;
+      const {
+        cliente: clienteDto,
+        vehiculo: vehiculoDto,
+        items,
+        numero_orden_papel,
+        realizado_por,
+        revisado_por,
+      } = createWorkOrderDto;
 
       // ---------------------------------------------------------
       // 1. GESTIÓN DEL CLIENTE (Find or Create) - CON NORMALIZACIÓN
       // ---------------------------------------------------------
       let client: Client | null = null;
-      
+
       // Normalizar inputs para evitar duplicados
-      const rutNormalizado = clienteDto.rut ? clienteDto.rut.replace(/\./g, '').replace(/-/g, '').toUpperCase() : null;
-      const emailNormalizado = clienteDto.email ? clienteDto.email.toLowerCase().trim() : null;
-      
+      const rutNormalizado = clienteDto.rut
+        ? clienteDto.rut.replace(/\./g, '').replace(/-/g, '').toUpperCase()
+        : null;
+      const emailNormalizado = clienteDto.email
+        ? clienteDto.email.toLowerCase().trim()
+        : null;
+
       // Intentamos buscar por RUT primero (es lo más seguro)
       if (rutNormalizado) {
-        client = await queryRunner.manager.findOne(Client, { where: { rut: rutNormalizado } });
+        client = await queryRunner.manager.findOne(Client, {
+          where: { rut: rutNormalizado },
+        });
       }
-      
+
       // Si no hay RUT o no se encontró, intentamos por Email
       if (!client && emailNormalizado) {
-        client = await queryRunner.manager.findOne(Client, { where: { email: emailNormalizado } });
+        client = await queryRunner.manager.findOne(Client, {
+          where: { email: emailNormalizado },
+        });
       }
 
       // Si no existe, lo creamos
@@ -73,15 +88,17 @@ export class WorkOrdersService {
       // 2. GESTIÓN DEL VEHÍCULO - CON NORMALIZACIÓN
       // ---------------------------------------------------------
       const patenteNormalizada = vehiculoDto.patente.toUpperCase().trim();
-      let vehicle = await queryRunner.manager.findOne(Vehicle, { where: { patente: patenteNormalizada } });
-      
+      let vehicle = await queryRunner.manager.findOne(Vehicle, {
+        where: { patente: patenteNormalizada },
+      });
+
       if (!vehicle) {
         vehicle = new Vehicle();
         vehicle.patente = patenteNormalizada;
         vehicle.marca = vehiculoDto.marca;
         vehicle.modelo = vehiculoDto.modelo;
       }
-      
+
       // SIEMPRE actualizar kilometraje al valor nuevo
       if (vehiculoDto.kilometraje) {
         vehicle.kilometraje = vehiculoDto.kilometraje;
@@ -101,7 +118,7 @@ export class WorkOrdersService {
       order.estado = 'FINALIZADA';
       order.fecha_ingreso = new Date();
       order.detalles = [];
-      
+
       let totalOrden = 0;
 
       // ---------------------------------------------------------
@@ -110,21 +127,27 @@ export class WorkOrdersService {
       for (const item of items) {
         const detail = new WorkOrderDetail();
         detail.servicio_nombre = item.servicio_nombre;
-        detail.descripcion = item.descripcion;
+        detail.descripcion = item.descripcion || '';
         detail.precio = item.precio;
 
         // LÓGICA DE INVENTARIO
         if (item.product_sku) {
-          const product = await queryRunner.manager.findOne(Product, { where: { sku: item.product_sku } });
-          
+          const product = await queryRunner.manager.findOne(Product, {
+            where: { sku: item.product_sku },
+          });
+
           if (!product) {
-            throw new BadRequestException(`El producto con SKU ${item.product_sku} no existe en inventario.`);
+            throw new BadRequestException(
+              `El producto con SKU ${item.product_sku} no existe en inventario.`,
+            );
           }
 
           const cantidad = item.cantidad_producto || 1;
 
           if (product.stock_actual < cantidad) {
-            throw new BadRequestException(`Stock insuficiente para ${product.nombre}. Quedan ${product.stock_actual}.`);
+            throw new BadRequestException(
+              `Stock insuficiente para ${product.nombre}. Quedan ${product.stock_actual}.`,
+            );
           }
 
           // Descontar stock
@@ -132,7 +155,7 @@ export class WorkOrdersService {
           await queryRunner.manager.save(product);
 
           // Guardar referencia en el detalle
-          detail.producto = product; 
+          detail.producto = product;
         }
 
         detail.workOrder = order;
@@ -149,16 +172,25 @@ export class WorkOrdersService {
       }
 
       await queryRunner.commitTransaction();
-      return { message: 'Orden creada exitosamente', orden_id: order.id, total: totalOrden };
-
+      return {
+        message: 'Orden creada exitosamente',
+        orden_id: order.id,
+        total: totalOrden,
+      };
     } catch (error) {
       await queryRunner.rollbackTransaction();
-      
+
       // Manejo de error de duplicidad para numero_orden_papel (Postgres code '23505')
-      if (error.code === '23505' && error.detail?.includes('numero_orden_papel')) {
-        throw new BadRequestException(`El número de orden ${createWorkOrderDto.numero_orden_papel} ya existe en el sistema.`);
+      const dbError = error as { code?: string; detail?: string };
+      if (
+        dbError.code === '23505' &&
+        dbError.detail?.includes('numero_orden_papel')
+      ) {
+        throw new BadRequestException(
+          `El número de orden ${createWorkOrderDto.numero_orden_papel} ya existe en el sistema.`,
+        );
       }
-      
+
       throw error;
     } finally {
       await queryRunner.release();
@@ -176,7 +208,7 @@ export class WorkOrdersService {
    * Retorna el catálogo oficial de servicios del taller.
    * Este método es consumido por el Frontend para mostrar los checkboxes/opciones
    * disponibles en el formulario de órdenes de trabajo.
-   * 
+   *
    * @returns Array de strings con los nombres de servicios oficiales
    */
   getServicesList(): string[] {

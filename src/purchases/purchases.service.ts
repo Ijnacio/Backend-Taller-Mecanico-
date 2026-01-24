@@ -13,12 +13,17 @@ export class PurchasesService {
 
   async create(createPurchaseDto: CreatePurchaseDto) {
     // FIX AUDITORIA 2: Validar proveedor
-    if (!createPurchaseDto.proveedor_nombre || createPurchaseDto.proveedor_nombre.trim() === '') {
+    if (
+      !createPurchaseDto.proveedor_nombre ||
+      createPurchaseDto.proveedor_nombre.trim() === ''
+    ) {
       throw new BadRequestException('El nombre del proveedor es obligatorio');
     }
 
     if (!createPurchaseDto.items || createPurchaseDto.items.length === 0) {
-      throw new BadRequestException('La compra debe tener al menos un producto');
+      throw new BadRequestException(
+        'La compra debe tener al menos un producto',
+      );
     }
 
     const queryRunner = this.dataSource.createQueryRunner();
@@ -27,11 +32,13 @@ export class PurchasesService {
 
     try {
       // 1. GESTIÓN PROVEEDOR
-      let provider = await queryRunner.manager.findOne(Provider, { 
-        where: { nombre: createPurchaseDto.proveedor_nombre } 
+      let provider = await queryRunner.manager.findOne(Provider, {
+        where: { nombre: createPurchaseDto.proveedor_nombre },
       });
       if (!provider) {
-        provider = queryRunner.manager.create(Provider, { nombre: createPurchaseDto.proveedor_nombre });
+        provider = queryRunner.manager.create(Provider, {
+          nombre: createPurchaseDto.proveedor_nombre,
+        });
         await queryRunner.manager.save(provider);
       }
 
@@ -40,25 +47,37 @@ export class PurchasesService {
       purchase.numero_factura = createPurchaseDto.numero_documento || 'S/N';
       purchase.proveedor = provider;
       purchase.detalles = [];
-      
+
       let sumaTotalGasto = 0;
 
       // 3. PROCESAR ITEMS
       for (const item of createPurchaseDto.items) {
         // FIX AUDITORIA FINAL: Validaciones Críticas
-        if (!item.sku || item.sku.trim() === '') throw new BadRequestException('El SKU es obligatorio en todos los items');
-        if (item.cantidad <= 0) throw new BadRequestException(`La cantidad del SKU ${item.sku} debe ser positiva`);
-        if (item.precio_costo < 0) throw new BadRequestException(`El costo del SKU ${item.sku} no puede ser negativo`);
-        if (item.precio_venta_sugerido < 0) throw new BadRequestException(`El precio sugerido del SKU ${item.sku} no puede ser negativo`);
+        if (!item.sku || item.sku.trim() === '')
+          throw new BadRequestException(
+            'El SKU es obligatorio en todos los items',
+          );
+        if (item.cantidad <= 0)
+          throw new BadRequestException(
+            `La cantidad del SKU ${item.sku} debe ser positiva`,
+          );
+        if (item.precio_costo < 0)
+          throw new BadRequestException(
+            `El costo del SKU ${item.sku} no puede ser negativo`,
+          );
+        if (item.precio_venta_sugerido < 0)
+          throw new BadRequestException(
+            `El precio sugerido del SKU ${item.sku} no puede ser negativo`,
+          );
 
         // FIX AUDITORIA FINAL: Redondeo preventivo (Integers)
         const costoUnitario = Math.round(item.precio_costo);
         const precioVenta = Math.round(item.precio_venta_sugerido);
         const totalFila = Math.round(item.cantidad * costoUnitario);
 
-        let product = await queryRunner.manager.findOne(Product, { 
+        let product = await queryRunner.manager.findOne(Product, {
           where: { sku: item.sku },
-          relations: ['vehiculosCompatibles'] 
+          relations: ['vehiculosCompatibles'],
         });
 
         if (!product) {
@@ -81,13 +100,16 @@ export class PurchasesService {
         // Merge de Vehículos
         if (item.vehiculos_ids && item.vehiculos_ids.length > 0) {
           const nuevosVehiculos = await queryRunner.manager.find(Vehicle, {
-            where: { id: In(item.vehiculos_ids) }
+            where: { id: In(item.vehiculos_ids) },
           });
           const vehiculosActuales = product.vehiculosCompatibles || [];
-          const vehiculosA_Agregar = nuevosVehiculos.filter(nv => 
-            !vehiculosActuales.some(va => va.id === nv.id)
+          const vehiculosA_Agregar = nuevosVehiculos.filter(
+            (nv) => !vehiculosActuales.some((va) => va.id === nv.id),
           );
-          product.vehiculosCompatibles = [...vehiculosActuales, ...vehiculosA_Agregar];
+          product.vehiculosCompatibles = [
+            ...vehiculosActuales,
+            ...vehiculosA_Agregar,
+          ];
         }
 
         // Actualizar Stock
@@ -99,9 +121,9 @@ export class PurchasesService {
         detail.producto = product;
         detail.cantidad = item.cantidad;
         detail.precio_costo_unitario = costoUnitario; // Guardamos Integer
-        detail.total_fila = totalFila;                // Guardamos Integer
-        detail.compra = purchase; 
-        
+        detail.total_fila = totalFila; // Guardamos Integer
+        detail.compra = purchase;
+
         purchase.detalles.push(detail);
         sumaTotalGasto += totalFila;
       }
@@ -118,14 +140,39 @@ export class PurchasesService {
       }
 
       await queryRunner.manager.save(purchase);
-      
+
       for (const det of purchase.detalles) {
         await queryRunner.manager.save(PurchaseDetail, det);
       }
 
       await queryRunner.commitTransaction();
-      return purchase;
 
+      // Eliminar referencias circulares para serialización JSON
+      const result = {
+        id: purchase.id,
+        numero_factura: purchase.numero_factura,
+        fecha: purchase.fecha,
+        monto_neto: purchase.monto_neto,
+        monto_iva: purchase.monto_iva,
+        monto_total: purchase.monto_total,
+        proveedor: purchase.proveedor,
+        detalles: purchase.detalles.map((det) => ({
+          id: det.id,
+          cantidad: det.cantidad,
+          precio_costo_unitario: det.precio_costo_unitario,
+          total_fila: det.total_fila,
+          producto: det.producto
+            ? {
+                id: det.producto.id,
+                sku: det.producto.sku,
+                nombre: det.producto.nombre,
+                stock_actual: det.producto.stock_actual,
+              }
+            : null,
+        })),
+      };
+
+      return result;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw error;
@@ -142,7 +189,7 @@ export class PurchasesService {
     try {
       const purchase = await queryRunner.manager.findOne(Purchase, {
         where: { id },
-        relations: ['detalles', 'detalles.producto']
+        relations: ['detalles', 'detalles.producto'],
       });
 
       if (!purchase) {
@@ -161,7 +208,6 @@ export class PurchasesService {
       await queryRunner.manager.remove(purchase);
       await queryRunner.commitTransaction();
       return { message: 'Compra eliminada y stock revertido', id };
-
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw error;
@@ -171,9 +217,35 @@ export class PurchasesService {
   }
 
   async findAll() {
-    return await this.dataSource.manager.find(Purchase, {
+    const purchases = await this.dataSource.manager.find(Purchase, {
       relations: ['proveedor', 'detalles', 'detalles.producto'],
       order: { fecha: 'DESC' },
     });
+
+    // Eliminar referencias circulares
+    return purchases.map((purchase) => ({
+      id: purchase.id,
+      numero_factura: purchase.numero_factura,
+      fecha: purchase.fecha,
+      monto_neto: purchase.monto_neto,
+      monto_iva: purchase.monto_iva,
+      monto_total: purchase.monto_total,
+      proveedor: purchase.proveedor,
+      detalles:
+        purchase.detalles?.map((det) => ({
+          id: det.id,
+          cantidad: det.cantidad,
+          precio_costo_unitario: det.precio_costo_unitario,
+          total_fila: det.total_fila,
+          producto: det.producto
+            ? {
+                id: det.producto.id,
+                sku: det.producto.sku,
+                nombre: det.producto.nombre,
+                stock_actual: det.producto.stock_actual,
+              }
+            : null,
+        })) || [],
+    }));
   }
 }

@@ -1,4 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { Exclude } from 'class-transformer';
 import { Purchase } from './purchase.entity';
 import { Product } from '../../products/entities/product.entity';
 
@@ -17,6 +18,7 @@ export class PurchaseDetail {
   total_fila: number; // Ej: $50.000 (10 * 5.000)
 
   // RELACIONES
+  @Exclude() // Evitar referencia circular en serialización JSON
   @ManyToOne(() => Purchase, (purchase) => purchase.detalles)
   compra: Purchase;
 

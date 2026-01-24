@@ -4,7 +4,8 @@ import { UpdateVehicleDto } from './dto/update-vehicle.dto';
 
 @Injectable()
 export class VehiclesService {
-  create(createVehicleDto: CreateVehicleDto) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  create(_createVehicleDto: CreateVehicleDto) {
     return 'This action adds a new vehicle';
   }
 
@@ -16,7 +17,8 @@ export class VehiclesService {
     return `This action returns a #${id} vehicle`;
   }
 
-  update(id: number, updateVehicleDto: UpdateVehicleDto) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  update(id: number, _updateVehicleDto: UpdateVehicleDto) {
     return `This action updates a #${id} vehicle`;
   }
 

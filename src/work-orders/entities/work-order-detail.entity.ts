@@ -17,7 +17,9 @@ export class WorkOrderDetail {
   precio: number; // Lo que se cobró por este servicio
 
   // === RELACIONES ===
-  @ManyToOne(() => WorkOrder, (order) => order.detalles, { onDelete: 'CASCADE' })
+  @ManyToOne(() => WorkOrder, (order) => order.detalles, {
+    onDelete: 'CASCADE',
+  })
   workOrder: WorkOrder;
 
   @ManyToOne(() => Product, { nullable: true, onDelete: 'RESTRICT' })

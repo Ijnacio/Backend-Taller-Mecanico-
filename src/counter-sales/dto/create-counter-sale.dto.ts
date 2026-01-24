@@ -1,4 +1,12 @@
-import { IsString, IsArray, ValidateNested, IsOptional, IsEnum, IsInt, Min } from 'class-validator';
+import {
+  IsString,
+  IsArray,
+  ValidateNested,
+  IsOptional,
+  IsEnum,
+  IsInt,
+  Min,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { MovementType } from '../enums/movement-type.enum';
@@ -13,9 +21,10 @@ class CounterSaleItemDto {
   @Min(1)
   cantidad: number;
 
-  @ApiPropertyOptional({ 
-    example: 28000, 
-    description: 'Precio de venta unitario. OBLIGATORIO solo si tipo_movimiento = VENTA' 
+  @ApiPropertyOptional({
+    example: 28000,
+    description:
+      'Precio de venta unitario. OBLIGATORIO solo si tipo_movimiento = VENTA',
   })
   @IsInt()
   @Min(0)
@@ -24,35 +33,37 @@ class CounterSaleItemDto {
 }
 
 export class CreateCounterSaleDto {
-  @ApiProperty({ 
+  @ApiProperty({
     enum: MovementType,
     example: 'VENTA',
-    description: 'Tipo de movimiento: VENTA (cliente compra), PERDIDA (producto dañado), USO_INTERNO (consumo taller)'
+    description:
+      'Tipo de movimiento: VENTA (cliente compra), PERDIDA (producto dañado), USO_INTERNO (consumo taller)',
   })
   @IsEnum(MovementType)
   tipo_movimiento: MovementType;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Lista de productos a mover',
     type: [CounterSaleItemDto],
-    example: [{ sku: 'F-001', cantidad: 2, precio_venta: 28000 }]
+    example: [{ sku: 'F-001', cantidad: 2, precio_venta: 28000 }],
   })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => CounterSaleItemDto)
   items: CounterSaleItemDto[];
 
-  @ApiPropertyOptional({ 
-    example: 'Cliente compró sin instalación', 
-    description: 'Comentario o motivo del movimiento' 
+  @ApiPropertyOptional({
+    example: 'Cliente compró sin instalación',
+    description: 'Comentario o motivo del movimiento',
   })
   @IsString()
   @IsOptional()
   comentario?: string;
 
-  @ApiPropertyOptional({ 
-    example: 'Juan Pérez (walk-in)', 
-    description: 'Nombre del comprador. OBLIGATORIO solo si tipo_movimiento = VENTA' 
+  @ApiPropertyOptional({
+    example: 'Juan Pérez (walk-in)',
+    description:
+      'Nombre del comprador. OBLIGATORIO solo si tipo_movimiento = VENTA',
   })
   @IsString()
   @IsOptional()

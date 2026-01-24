@@ -1,6 +1,6 @@
 /**
  * UNIT TESTS: WorkOrdersService
- * 
+ *
  * Pruebas unitarias con mocks de TypeORM.
  * Valida lógica de negocio sin tocar base de datos real.
  */
@@ -124,7 +124,11 @@ describe('WorkOrdersService', () => {
         },
         items: [
           { servicio_nombre: 'Cambio Discos', descripcion: '', precio: 45000 },
-          { servicio_nombre: 'Cambio Pastillas', descripcion: '', precio: 25000 },
+          {
+            servicio_nombre: 'Cambio Pastillas',
+            descripcion: '',
+            precio: 25000,
+          },
           { servicio_nombre: 'Alineación', descripcion: '', precio: 15000 },
         ],
       };
@@ -176,13 +180,15 @@ describe('WorkOrdersService', () => {
         findOneCallCount++;
         if (findOneCallCount === 1) return Promise.resolve(null); // Cliente
         if (findOneCallCount === 2) return Promise.resolve(null); // Vehículo
-        if (findOneCallCount === 3) return Promise.resolve({      // Producto
-          id: 'product-uuid',
-          sku: 'F-001',
-          nombre: 'Pastilla Delantera',
-          stock_actual: 5, // Solo hay 5
-          precio_venta: 25000,
-        });
+        if (findOneCallCount === 3)
+          return Promise.resolve({
+            // Producto
+            id: 'product-uuid',
+            sku: 'F-001',
+            nombre: 'Pastilla Delantera',
+            stock_actual: 5, // Solo hay 5
+            precio_venta: 25000,
+          });
         return Promise.resolve(null);
       });
 
@@ -285,7 +291,9 @@ describe('WorkOrdersService', () => {
       });
 
       await expect(service.create(dto)).rejects.toThrow(BadRequestException);
-      await expect(service.create(dto)).rejects.toThrow(/no existe en inventario/);
+      await expect(service.create(dto)).rejects.toThrow(
+        /no existe en inventario/,
+      );
     });
   });
 
@@ -306,7 +314,7 @@ describe('WorkOrdersService', () => {
       const services2 = service.getServicesList();
 
       expect(services1).not.toBe(services2); // Diferentes referencias
-      expect(services1).toEqual(services2);  // Mismo contenido
+      expect(services1).toEqual(services2); // Mismo contenido
     });
   });
 

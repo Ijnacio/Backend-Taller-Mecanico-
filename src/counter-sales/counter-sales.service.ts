@@ -1,12 +1,12 @@
 /**
  * SERVICE: CounterSales (Ventas de Mostrador y Movimientos de Inventario)
- * 
+ *
  * PROPÓSITO:
  * Cerrar el ciclo de inventario manejando salidas de stock que NO son órdenes de trabajo:
  * - VENTA: Cliente compra repuesto sin servicio de instalación
  * - PERDIDA: Producto dañado/roto/vencido
  * - USO_INTERNO: Consumo del taller sin venta
- * 
+ *
  * LÓGICA:
  * 1. Validar stock disponible
  * 2. Restar stock del producto
@@ -33,11 +33,14 @@ export class CounterSalesService {
     await queryRunner.startTransaction();
 
     try {
-      const { tipo_movimiento, items, comentario, comprador } = createCounterSaleDto;
+      const { tipo_movimiento, items, comentario, comprador } =
+        createCounterSaleDto;
 
       // Validaciones de negocio
       if (tipo_movimiento === MovementType.VENTA && !comprador) {
-        throw new BadRequestException('Las ventas requieren el nombre del comprador');
+        throw new BadRequestException(
+          'Las ventas requieren el nombre del comprador',
+        );
       }
 
       if (items.length === 0) {
@@ -56,18 +59,20 @@ export class CounterSalesService {
 
       // Procesar cada item
       for (const item of items) {
-        const product = await queryRunner.manager.findOne(Product, { 
-          where: { sku: item.sku } 
+        const product = await queryRunner.manager.findOne(Product, {
+          where: { sku: item.sku },
         });
 
         if (!product) {
-          throw new BadRequestException(`El producto con SKU ${item.sku} no existe en inventario.`);
+          throw new BadRequestException(
+            `El producto con SKU ${item.sku} no existe en inventario.`,
+          );
         }
 
         // Validar stock suficiente
         if (product.stock_actual < item.cantidad) {
           throw new BadRequestException(
-            `Stock insuficiente para ${product.nombre}. Disponible: ${product.stock_actual}, Solicitado: ${item.cantidad}`
+            `Stock insuficiente para ${product.nombre}. Disponible: ${product.stock_actual}, Solicitado: ${item.cantidad}`,
           );
         }
 
@@ -75,7 +80,7 @@ export class CounterSalesService {
         if (tipo_movimiento === MovementType.VENTA) {
           if (!item.precio_venta || item.precio_venta <= 0) {
             throw new BadRequestException(
-              `El producto ${product.nombre} requiere un precio de venta válido`
+              `El producto ${product.nombre} requiere un precio de venta válido`,
             );
           }
         }
@@ -127,9 +132,8 @@ export class CounterSalesService {
         tipo: tipo_movimiento,
         total_venta: totalVenta,
         costo_perdida: costoPerdida,
-        items_procesados: items.length
+        items_procesados: items.length,
       };
-
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw error;

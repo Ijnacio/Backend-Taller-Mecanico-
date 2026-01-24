@@ -1,4 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, ManyToMany, JoinTable } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  ManyToMany,
+  JoinTable,
+} from 'typeorm';
 import { Category } from '../../categories/entities/category.entity'; // <--- IMPORTAR
 import { Vehicle } from '../../vehicles/entities/vehicle.entity';
 
@@ -28,11 +35,15 @@ export class Product {
   @Column('int', { default: 5 })
   stock_minimo: number; // Para la alerta [cite: 35]
 
-  @ManyToMany(() => Vehicle, (vehicle) => vehicle.productosCompatibles, { cascade: true })
+  @ManyToMany(() => Vehicle, (vehicle) => vehicle.productosCompatibles, {
+    cascade: true,
+  })
   @JoinTable()
   vehiculosCompatibles: Vehicle[];
 
   // RELACIÓN CON CATEGORÍA (Para los filtros)
-  @ManyToOne(() => Category, (category) => category.productos, { nullable: true })
+  @ManyToOne(() => Category, (category) => category.productos, {
+    nullable: true,
+  })
   categoria: Category;
 }

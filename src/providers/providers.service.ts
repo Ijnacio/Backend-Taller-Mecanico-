@@ -4,7 +4,8 @@ import { UpdateProviderDto } from './dto/update-provider.dto';
 
 @Injectable()
 export class ProvidersService {
-  create(createProviderDto: CreateProviderDto) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  create(_createProviderDto: CreateProviderDto) {
     return 'This action adds a new provider';
   }
 
@@ -16,7 +17,8 @@ export class ProvidersService {
     return `This action returns a #${id} provider`;
   }
 
-  update(id: number, updateProviderDto: UpdateProviderDto) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  update(id: number, _updateProviderDto: UpdateProviderDto) {
     return `This action updates a #${id} provider`;
   }
 

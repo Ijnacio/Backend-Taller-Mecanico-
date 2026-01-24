@@ -1,4 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany, CreateDateColumn, Index } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  OneToMany,
+  CreateDateColumn,
+  Index,
+} from 'typeorm';
 import { Client } from '../../clients/entities/client.entity';
 import { WorkOrderDetail } from './work-order-detail.entity';
 
@@ -38,6 +46,8 @@ export class WorkOrder {
   @ManyToOne(() => Client, { nullable: false })
   cliente: Client; // Historial del cliente
 
-  @OneToMany(() => WorkOrderDetail, (detail) => detail.workOrder, { cascade: true })
+  @OneToMany(() => WorkOrderDetail, (detail) => detail.workOrder, {
+    cascade: true,
+  })
   detalles: WorkOrderDetail[];
 }

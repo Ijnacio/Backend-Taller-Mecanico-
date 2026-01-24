@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  OneToMany,
+} from 'typeorm';
 import { MovementType } from '../enums/movement-type.enum';
 import { CounterSaleDetail } from './counter-sale-detail.entity';
 
@@ -9,7 +15,7 @@ export class CounterSale {
 
   @Column({
     type: 'varchar',
-    enum: MovementType
+    enum: MovementType,
   })
   tipo_movimiento: MovementType;
 
@@ -28,6 +34,8 @@ export class CounterSale {
   @Column({ nullable: true })
   comprador: string; // Nombre del cliente (solo VENTA)
 
-  @OneToMany(() => CounterSaleDetail, (detail) => detail.counterSale, { cascade: true })
+  @OneToMany(() => CounterSaleDetail, (detail) => detail.counterSale, {
+    cascade: true,
+  })
   detalles: CounterSaleDetail[];
 }

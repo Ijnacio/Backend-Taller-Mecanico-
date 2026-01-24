@@ -20,7 +20,9 @@ export class CounterSaleDetail {
   total_fila: number; // cantidad * precio_venta (si es venta) o 0
 
   // === RELACIONES ===
-  @ManyToOne(() => CounterSale, (sale) => sale.detalles, { onDelete: 'CASCADE' })
+  @ManyToOne(() => CounterSale, (sale) => sale.detalles, {
+    onDelete: 'CASCADE',
+  })
   counterSale: CounterSale;
 
   @ManyToOne(() => Product, { onDelete: 'RESTRICT' })

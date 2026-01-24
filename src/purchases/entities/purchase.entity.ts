@@ -1,4 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, OneToMany, Index } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  ManyToOne,
+  OneToMany,
+  Index,
+} from 'typeorm';
 import { Provider } from '../../providers/entities/provider.entity';
 import { PurchaseDetail } from '././purchase-detail.entity'; // <--- OJO: Nueva entidad abajo
 
@@ -19,7 +27,7 @@ export class Purchase {
   monto_neto: number; // Suma sin IVA
 
   @Column('int', { default: 0 })
-  monto_iva: number;  // El 19% (si aplica)
+  monto_iva: number; // El 19% (si aplica)
 
   @Column('int', { default: 0 })
   monto_total: number; // Lo que realmente pagó la señora

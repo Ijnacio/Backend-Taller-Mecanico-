@@ -1,4 +1,9 @@
-import { Injectable, ConflictException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -27,16 +32,21 @@ export class UsersService {
 
       // Verificar si el RUT ya existe
       const existingUser = await queryRunner.manager.findOne(User, {
-        where: { rut: rutNormalizado }
+        where: { rut: rutNormalizado },
       });
 
       if (existingUser) {
-        throw new ConflictException(`El RUT ${createUserDto.rut} ya está registrado`);
+        throw new ConflictException(
+          `El RUT ${createUserDto.rut} ya está registrado`,
+        );
       }
 
       // Hashear contraseña con bcrypt (10 rounds)
       const saltRounds = 10;
-      const hashedPassword = await bcrypt.hash(createUserDto.password, saltRounds);
+      const hashedPassword = await bcrypt.hash(
+        createUserDto.password,
+        saltRounds,
+      );
 
       // Crear usuario
       const user = new User();
@@ -50,9 +60,9 @@ export class UsersService {
       await queryRunner.commitTransaction();
 
       // Retornar usuario sin password
-      const { password, ...userWithoutPassword } = savedUser;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password: _p, ...userWithoutPassword } = savedUser;
       return userWithoutPassword as User;
-
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw error;
@@ -71,7 +81,7 @@ export class UsersService {
       .toUpperCase();
 
     return await this.dataSource.manager.findOne(User, {
-      where: { rut: rutNormalizado }
+      where: { rut: rutNormalizado },
     });
   }
 
@@ -80,7 +90,7 @@ export class UsersService {
    */
   async findById(id: string): Promise<User | null> {
     return await this.dataSource.manager.findOne(User, {
-      where: { id }
+      where: { id },
     });
   }
 
@@ -89,11 +99,12 @@ export class UsersService {
    */
   async findAll(): Promise<User[]> {
     const users = await this.dataSource.manager.find(User, {
-      order: { createdAt: 'DESC' }
+      order: { createdAt: 'DESC' },
     });
 
     // Retornar usuarios sin passwords
-    return users.map(({ password, ...user }) => user as User);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    return users.map(({ password: _p, ...user }) => user as User);
   }
 
   /**
@@ -113,12 +124,15 @@ export class UsersService {
    * Cambiar contraseña del usuario
    * Valida contraseña actual antes de cambiar
    */
-  async changePassword(userId: string, changePasswordDto: ChangePasswordDto): Promise<{ message: string }> {
+  async changePassword(
+    userId: string,
+    changePasswordDto: ChangePasswordDto,
+  ): Promise<{ message: string }> {
     const { currentPassword, newPassword } = changePasswordDto;
 
     // Buscar usuario con contraseña
     const user = await this.dataSource.manager.findOne(User, {
-      where: { id: userId }
+      where: { id: userId },
     });
 
     if (!user) {
@@ -126,7 +140,10 @@ export class UsersService {
     }
 
     // Validar contraseña actual
-    const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    const isPasswordValid = await bcrypt.compare(
+      currentPassword,
+      user.password,
+    );
     if (!isPasswordValid) {
       throw new UnauthorizedException('La contraseña actual es incorrecta');
     }

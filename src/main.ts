@@ -38,4 +38,4 @@ async function bootstrap() {
   console.log(`🚀 Servidor corriendo en: http://localhost:3000/api`);
   console.log(`📄 Documentación Swagger: http://localhost:3000/docs`);
 }
-bootstrap();
+void bootstrap();

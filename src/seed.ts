@@ -8,7 +8,7 @@ import { UserRole } from './users/enums/user-role.enum';
 /**
  * SEED COMPLETO - Taller Frenos Aguilera
  * Ejecutar con: npm run seed
- * 
+ *
  * Crea:
  * - 2 Usuarios (ADMIN + WORKER)
  * - 4 Categorías
@@ -32,7 +32,7 @@ async function seed() {
   // =========================================================
   // 1. USUARIOS
   // =========================================================
-  
+
   // ADMIN (Dueña - Jefa del Taller)
   const rutAdmin = '111111111';
   if (!(await userRepo.findOneBy({ rut: rutAdmin }))) {
@@ -42,7 +42,7 @@ async function seed() {
       password: hash,
       nombre: 'Administradora',
       role: UserRole.ADMIN,
-      isActive: true
+      isActive: true,
     });
     console.log('✅ Usuario ADMIN creado');
   } else {
@@ -58,7 +58,7 @@ async function seed() {
       password: hash,
       nombre: 'Taller General',
       role: UserRole.WORKER,
-      isActive: true
+      isActive: true,
     });
     console.log('✅ Usuario WORKER creado');
   } else {
@@ -70,11 +70,14 @@ async function seed() {
   // =========================================================
   const categorias = ['Frenos', 'Suspensión', 'Motor', 'Lubricantes'];
   const catsGuardadas: Category[] = [];
-  
+
   for (const nombre of categorias) {
     let cat = await catRepo.findOneBy({ nombre });
     if (!cat) {
-      cat = await catRepo.save({ nombre, descripcion: `Repuestos de ${nombre}` });
+      cat = await catRepo.save({
+        nombre,
+        descripcion: `Repuestos de ${nombre}`,
+      });
     }
     catsGuardadas.push(cat);
   }
@@ -84,9 +87,30 @@ async function seed() {
   // 3. PRODUCTOS DE PRUEBA
   // =========================================================
   const productos = [
-    { sku: 'F-001', nombre: 'Pastilla Delantera Yaris', precio: 25000, stock: 10, min: 2, cat: catsGuardadas[0] },
-    { sku: 'F-002', nombre: 'Disco Ventilado', precio: 18000, stock: 4, min: 5, cat: catsGuardadas[0] }, // ⚠️ Stock Bajo!
-    { sku: 'L-001', nombre: 'Aceite 10W40', precio: 35000, stock: 20, min: 5, cat: catsGuardadas[3] },
+    {
+      sku: 'F-001',
+      nombre: 'Pastilla Delantera Yaris',
+      precio: 25000,
+      stock: 10,
+      min: 2,
+      cat: catsGuardadas[0],
+    },
+    {
+      sku: 'F-002',
+      nombre: 'Disco Ventilado',
+      precio: 18000,
+      stock: 4,
+      min: 5,
+      cat: catsGuardadas[0],
+    }, // ⚠️ Stock Bajo!
+    {
+      sku: 'L-001',
+      nombre: 'Aceite 10W40',
+      precio: 35000,
+      stock: 20,
+      min: 5,
+      cat: catsGuardadas[3],
+    },
   ];
 
   for (const p of productos) {
@@ -98,7 +122,7 @@ async function seed() {
         precio_venta: p.precio,
         stock_actual: p.stock,
         stock_minimo: p.min,
-        categoria: p.cat
+        categoria: p.cat,
       });
     }
   }

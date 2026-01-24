@@ -17,7 +17,7 @@ import { ClientsModule } from './clients/clients.module';
   imports: [
     // ========== CONFIGURACIÓN ==========
     ConfigModule.forRoot({ isGlobal: true }),
-    
+
     // ========== BASE DE DATOS ==========
     TypeOrmModule.forRoot({
       type: 'sqlite',
@@ -25,25 +25,25 @@ import { ClientsModule } from './clients/clients.module';
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       synchronize: true,
     }),
-    
+
     // ========== AUTENTICACIÓN ==========
     UsersModule,
     AuthModule,
-    
+
     // ========== CATÁLOGOS BASE ==========
     CategoriesModule,
     ProvidersModule,
     VehiclesModule,
     ClientsModule,
-    
+
     // ========== INVENTARIO ==========
     ProductsModule,
     PurchasesModule,
-    
+
     // ========== OPERACIONES ==========
     WorkOrdersModule,
     CounterSalesModule,
-    
+
     // ========== REPORTES ==========
     ReportsModule,
   ],

@@ -1,6 +1,6 @@
 /**
  * UNIT TESTS: CounterSalesService
- * 
+ *
  * Pruebas unitarias con mocks de TypeORM.
  * Valida lógica de ventas de mostrador, pérdidas y uso interno.
  */
@@ -65,9 +65,7 @@ describe('CounterSalesService', () => {
         tipo_movimiento: MovementType.VENTA,
         comprador: 'Cliente Test',
         comentario: 'Venta de prueba',
-        items: [
-          { sku: 'F-001', cantidad: 2, precio_venta: 10000 },
-        ],
+        items: [{ sku: 'F-001', cantidad: 2, precio_venta: 10000 }],
       };
 
       const mockProduct = {
@@ -104,8 +102,20 @@ describe('CounterSalesService', () => {
         ],
       };
 
-      const mockProduct1 = { id: 'p1', sku: 'F-001', nombre: 'Producto 1', stock_actual: 10, precio_venta: 8000 };
-      const mockProduct2 = { id: 'p2', sku: 'F-002', nombre: 'Producto 2', stock_actual: 5, precio_venta: 12000 };
+      const mockProduct1 = {
+        id: 'p1',
+        sku: 'F-001',
+        nombre: 'Producto 1',
+        stock_actual: 10,
+        precio_venta: 8000,
+      };
+      const mockProduct2 = {
+        id: 'p2',
+        sku: 'F-002',
+        nombre: 'Producto 2',
+        stock_actual: 5,
+        precio_venta: 12000,
+      };
 
       mockManager.findOne
         .mockResolvedValueOnce(mockProduct1)
@@ -189,9 +199,7 @@ describe('CounterSalesService', () => {
       const dto: CreateCounterSaleDto = {
         tipo_movimiento: MovementType.VENTA,
         comprador: 'Cliente Test',
-        items: [
-          { sku: 'F-001', cantidad: 3, precio_venta: 5000 },
-        ],
+        items: [{ sku: 'F-001', cantidad: 3, precio_venta: 5000 }],
       };
 
       const mockProduct = {
@@ -222,13 +230,13 @@ describe('CounterSalesService', () => {
       const dto: CreateCounterSaleDto = {
         tipo_movimiento: MovementType.VENTA,
         // comprador: FALTA
-        items: [
-          { sku: 'F-001', cantidad: 1, precio_venta: 5000 },
-        ],
+        items: [{ sku: 'F-001', cantidad: 1, precio_venta: 5000 }],
       };
 
       await expect(service.create(dto)).rejects.toThrow(BadRequestException);
-      await expect(service.create(dto)).rejects.toThrow(/requieren el nombre del comprador/);
+      await expect(service.create(dto)).rejects.toThrow(
+        /requieren el nombre del comprador/,
+      );
     });
 
     it('debe requerir precio_venta para items de VENTA', async () => {
@@ -251,7 +259,9 @@ describe('CounterSalesService', () => {
       mockManager.findOne.mockResolvedValue(mockProduct);
 
       await expect(service.create(dto)).rejects.toThrow(BadRequestException);
-      await expect(service.create(dto)).rejects.toThrow(/precio de venta válido/);
+      await expect(service.create(dto)).rejects.toThrow(
+        /precio de venta válido/,
+      );
     });
 
     it('debe rechazar lista vacía de items', async () => {
@@ -269,15 +279,15 @@ describe('CounterSalesService', () => {
       const dto: CreateCounterSaleDto = {
         tipo_movimiento: MovementType.VENTA,
         comprador: 'Cliente Test',
-        items: [
-          { sku: 'SKU-NO-EXISTE', cantidad: 1, precio_venta: 5000 },
-        ],
+        items: [{ sku: 'SKU-NO-EXISTE', cantidad: 1, precio_venta: 5000 }],
       };
 
       mockManager.findOne.mockResolvedValue(null); // Producto no existe
 
       await expect(service.create(dto)).rejects.toThrow(BadRequestException);
-      await expect(service.create(dto)).rejects.toThrow(/no existe en inventario/);
+      await expect(service.create(dto)).rejects.toThrow(
+        /no existe en inventario/,
+      );
     });
   });
 
@@ -289,9 +299,7 @@ describe('CounterSalesService', () => {
       const dto: CreateCounterSaleDto = {
         tipo_movimiento: MovementType.USO_INTERNO,
         comentario: 'Aceite para herramientas del taller',
-        items: [
-          { sku: 'L-001', cantidad: 1 },
-        ],
+        items: [{ sku: 'L-001', cantidad: 1 }],
       };
 
       const mockProduct = {
@@ -329,7 +337,11 @@ describe('CounterSalesService', () => {
       };
 
       mockManager.findOne.mockResolvedValue({
-        id: 'p1', sku: 'F-001', nombre: 'Test', stock_actual: 10, precio_venta: 4000,
+        id: 'p1',
+        sku: 'F-001',
+        nombre: 'Test',
+        stock_actual: 10,
+        precio_venta: 4000,
       });
       mockManager.save.mockImplementation((e: any) => {
         if (!e.id) e.id = 'uuid';

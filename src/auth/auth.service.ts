@@ -41,7 +41,7 @@ export class AuthService {
       sub: user.id,
       rut: user.rut,
       role: user.role,
-      nombre: user.nombre
+      nombre: user.nombre,
     };
 
     return {
@@ -50,8 +50,8 @@ export class AuthService {
         id: user.id,
         rut: user.rut,
         nombre: user.nombre,
-        role: user.role
-      }
+        role: user.role,
+      },
     };
   }
 
@@ -60,7 +60,7 @@ export class AuthService {
    */
   async validateUser(userId: string) {
     const user = await this.usersService.findById(userId);
-    
+
     if (!user || !user.isActive) {
       throw new UnauthorizedException('Usuario no válido');
     }

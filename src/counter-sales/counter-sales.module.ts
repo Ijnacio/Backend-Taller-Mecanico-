@@ -5,6 +5,6 @@ import { CounterSalesController } from './counter-sales.controller';
 @Module({
   controllers: [CounterSalesController],
   providers: [CounterSalesService],
-  exports: [CounterSalesService]
+  exports: [CounterSalesService],
 })
 export class CounterSalesModule {}
