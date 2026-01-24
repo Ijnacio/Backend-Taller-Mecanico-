@@ -8,24 +8,44 @@ import { VehiclesModule } from './vehicles/vehicles.module';
 import { CounterSalesModule } from './counter-sales/counter-sales.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { ReportsModule } from './reports/reports.module';
+import { ProductsModule } from './products/products.module';
+import { WorkOrdersModule } from './work-orders/work-orders.module';
+import { ClientsModule } from './clients/clients.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }), // Para usar variables de entorno luego
+    // ========== CONFIGURACIÓN ==========
+    ConfigModule.forRoot({ isGlobal: true }),
+    
+    // ========== BASE DE DATOS ==========
     TypeOrmModule.forRoot({
-      type: 'sqlite',           // Tipo de BD: Archivo local
-      database: 'taller.db',    // Nombre del archivo que se creará
-      entities: [__dirname + '/**/*.entity{.ts,.js}'], // Busca tus tablas automáticamente
-      synchronize: true,        // ¡Mágico! Crea las tablas por ti
-    }), 
-    ProvidersModule, 
-    PurchasesModule, 
-    CategoriesModule, 
-    VehiclesModule,
-    CounterSalesModule,
+      type: 'sqlite',
+      database: 'taller.db',
+      entities: [__dirname + '/**/*.entity{.ts,.js}'],
+      synchronize: true,
+    }),
+    
+    // ========== AUTENTICACIÓN ==========
     UsersModule,
     AuthModule,
-    // Aquí irán tus módulos (Products, WorkOrders, etc.)
+    
+    // ========== CATÁLOGOS BASE ==========
+    CategoriesModule,
+    ProvidersModule,
+    VehiclesModule,
+    ClientsModule,
+    
+    // ========== INVENTARIO ==========
+    ProductsModule,
+    PurchasesModule,
+    
+    // ========== OPERACIONES ==========
+    WorkOrdersModule,
+    CounterSalesModule,
+    
+    // ========== REPORTES ==========
+    ReportsModule,
   ],
   controllers: [],
   providers: [],

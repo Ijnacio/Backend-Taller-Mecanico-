@@ -1,9 +1,11 @@
-import { Controller, Get, Post, Body, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Patch, UseGuards } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { UserRole } from './enums/user-role.enum';
 
 @Controller('users')
@@ -19,6 +21,19 @@ export class UsersController {
   @Roles(UserRole.ADMIN)
   findAll() {
     return this.usersService.findAll();
+  }
+
+  /**
+   * PATCH /users/change-password
+   * Cualquier usuario autenticado puede cambiar su propia contraseña
+   */
+  @Patch('change-password')
+  @UseGuards(JwtAuthGuard)
+  changePassword(
+    @CurrentUser() user: any,
+    @Body() changePasswordDto: ChangePasswordDto
+  ) {
+    return this.usersService.changePassword(user.userId, changePasswordDto);
   }
 
   /**

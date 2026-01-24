@@ -1,7 +1,8 @@
-import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
+import { Injectable, ConflictException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/create-user.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { User } from './entities/user.entity';
 import { UserRole } from './enums/user-role.enum';
 
@@ -106,5 +107,38 @@ export class UsersService {
 
     user.isActive = false;
     await this.dataSource.manager.save(user);
+  }
+
+  /**
+   * Cambiar contraseña del usuario
+   * Valida contraseña actual antes de cambiar
+   */
+  async changePassword(userId: string, changePasswordDto: ChangePasswordDto): Promise<{ message: string }> {
+    const { currentPassword, newPassword } = changePasswordDto;
+
+    // Buscar usuario con contraseña
+    const user = await this.dataSource.manager.findOne(User, {
+      where: { id: userId }
+    });
+
+    if (!user) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+
+    // Validar contraseña actual
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('La contraseña actual es incorrecta');
+    }
+
+    // Hashear nueva contraseña
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+    // Guardar nueva contraseña
+    user.password = hashedPassword;
+    await this.dataSource.manager.save(user);
+
+    return { message: 'Contraseña actualizada exitosamente' };
   }
 }

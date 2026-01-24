@@ -1,13 +1,20 @@
 import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User } from './users/entities/user.entity';
+import { Product } from './products/entities/product.entity';
+import { Category } from './categories/entities/category.entity';
 import { UserRole } from './users/enums/user-role.enum';
 
 /**
- * Script para crear el usuario ADMIN inicial
+ * SEED COMPLETO - Taller Frenos Aguilera
  * Ejecutar con: npm run seed
+ * 
+ * Crea:
+ * - 2 Usuarios (ADMIN + WORKER)
+ * - 4 Categorías
+ * - 3 Productos de prueba (1 con stock bajo para probar alerta)
  */
-async function seedAdmin() {
+async function seed() {
   const dataSource = new DataSource({
     type: 'sqlite',
     database: 'taller.db',
@@ -16,54 +23,112 @@ async function seedAdmin() {
   });
 
   await dataSource.initialize();
-  console.log('✓ Conexión a base de datos establecida');
+  console.log('🌱 Iniciando carga de datos (Seed)...\n');
 
-  const userRepository = dataSource.getRepository(User);
+  const userRepo = dataSource.getRepository(User);
+  const catRepo = dataSource.getRepository(Category);
+  const prodRepo = dataSource.getRepository(Product);
 
-  // Verificar si ya existe un admin
-  const existingAdmin = await userRepository.findOne({
-    where: { rut: '111111111' }
-  });
-
-  if (existingAdmin) {
-    console.log('⚠️  Ya existe un usuario ADMIN con RUT 11.111.111-1');
-    await dataSource.destroy();
-    return;
+  // =========================================================
+  // 1. USUARIOS
+  // =========================================================
+  
+  // ADMIN (Dueña - Jefa del Taller)
+  const rutAdmin = '111111111';
+  if (!(await userRepo.findOneBy({ rut: rutAdmin }))) {
+    const hash = await bcrypt.hash('admin123', 10);
+    await userRepo.save({
+      rut: rutAdmin,
+      password: hash,
+      nombre: 'Administradora',
+      role: UserRole.ADMIN,
+      isActive: true
+    });
+    console.log('✅ Usuario ADMIN creado');
+  } else {
+    console.log('⏭️  Usuario ADMIN ya existe');
   }
 
-  // Crear usuario ADMIN por defecto
-  const saltRounds = 10;
-  const hashedPassword = await bcrypt.hash('admin123', saltRounds);
+  // WORKER (Cuenta compartida del Taller)
+  const rutTaller = '999999999';
+  if (!(await userRepo.findOneBy({ rut: rutTaller }))) {
+    const hash = await bcrypt.hash('taller123', 10);
+    await userRepo.save({
+      rut: rutTaller,
+      password: hash,
+      nombre: 'Taller General',
+      role: UserRole.WORKER,
+      isActive: true
+    });
+    console.log('✅ Usuario WORKER creado');
+  } else {
+    console.log('⏭️  Usuario WORKER ya existe');
+  }
 
-  const admin = new User();
-  admin.rut = '111111111'; // RUT normalizado
-  admin.password = hashedPassword;
-  admin.nombre = 'Administrador';
-  admin.role = UserRole.ADMIN;
-  admin.isActive = true;
+  // =========================================================
+  // 2. CATEGORÍAS
+  // =========================================================
+  const categorias = ['Frenos', 'Suspensión', 'Motor', 'Lubricantes'];
+  const catsGuardadas: Category[] = [];
+  
+  for (const nombre of categorias) {
+    let cat = await catRepo.findOneBy({ nombre });
+    if (!cat) {
+      cat = await catRepo.save({ nombre, descripcion: `Repuestos de ${nombre}` });
+    }
+    catsGuardadas.push(cat);
+  }
+  console.log('✅ Categorías creadas/verificadas');
 
-  await userRepository.save(admin);
+  // =========================================================
+  // 3. PRODUCTOS DE PRUEBA
+  // =========================================================
+  const productos = [
+    { sku: 'F-001', nombre: 'Pastilla Delantera Yaris', precio: 25000, stock: 10, min: 2, cat: catsGuardadas[0] },
+    { sku: 'F-002', nombre: 'Disco Ventilado', precio: 18000, stock: 4, min: 5, cat: catsGuardadas[0] }, // ⚠️ Stock Bajo!
+    { sku: 'L-001', nombre: 'Aceite 10W40', precio: 35000, stock: 20, min: 5, cat: catsGuardadas[3] },
+  ];
 
-  console.log('✓ Usuario ADMIN creado exitosamente');
-  console.log('');
-  console.log('╔════════════════════════════════════════╗');
-  console.log('║  CREDENCIALES DE ACCESO INICIAL       ║');
-  console.log('╠════════════════════════════════════════╣');
-  console.log('║  RUT:        11.111.111-1              ║');
-  console.log('║  Contraseña: admin123                  ║');
-  console.log('╚════════════════════════════════════════╝');
-  console.log('');
-  console.log('⚠️  IMPORTANTE: Cambia esta contraseña inmediatamente en producción');
+  for (const p of productos) {
+    if (!(await prodRepo.findOneBy({ sku: p.sku }))) {
+      await prodRepo.save({
+        sku: p.sku,
+        nombre: p.nombre,
+        marca: 'Genérica',
+        precio_venta: p.precio,
+        stock_actual: p.stock,
+        stock_minimo: p.min,
+        categoria: p.cat
+      });
+    }
+  }
+  console.log('✅ Productos de prueba cargados');
+
+  // =========================================================
+  // RESUMEN FINAL
+  // =========================================================
+  console.log('\n');
+  console.log('╔═══════════════════════════════════════════════════════════╗');
+  console.log('║               🏁 SEED FINALIZADO CON ÉXITO                ║');
+  console.log('╠═══════════════════════════════════════════════════════════╣');
+  console.log('║                                                           ║');
+  console.log('║  👤 USUARIO ADMIN (Dueña):                                ║');
+  console.log('║     RUT:        11.111.111-1                              ║');
+  console.log('║     Contraseña: admin123                                  ║');
+  console.log('║                                                           ║');
+  console.log('║  👷 USUARIO WORKER (Taller):                              ║');
+  console.log('║     RUT:        99.999.999-9                              ║');
+  console.log('║     Contraseña: taller123                                 ║');
+  console.log('║                                                           ║');
+  console.log('╠═══════════════════════════════════════════════════════════╣');
+  console.log('║  ⚠️  IMPORTANTE: Cambia estas contraseñas en producción   ║');
+  console.log('╚═══════════════════════════════════════════════════════════╝');
+  console.log('\n');
 
   await dataSource.destroy();
 }
 
-seedAdmin()
-  .then(() => {
-    console.log('✓ Seed completado');
-    process.exit(0);
-  })
-  .catch((error) => {
-    console.error('✗ Error en seed:', error);
-    process.exit(1);
-  });
+seed().catch((e) => {
+  console.error('❌ Error en seed:', e);
+  process.exit(1);
+});
