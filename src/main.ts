@@ -8,8 +8,8 @@ async function bootstrap() {
 
   // 1. Habilitar CORS (Para que el Frontend de Fran pueda conectarse)
   app.enableCors({
-    origin: process.env.FRONTEND_URL || true, // true = cualquier origen en dev
-    credentials: true,
+    origin: '*', // Por ahora déjalo en asterisco para facilitar las pruebas
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   });
 
   // 2. Prefijo Global (Tus rutas ahora serán /api/products, /api/auth, etc.)
