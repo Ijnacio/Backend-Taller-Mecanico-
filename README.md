@@ -3,78 +3,46 @@
 > **Estado:** ✅ Producción Ready | **Versión:** 1.0.0 | **Stack:** NestJS 11 + TypeORM + PostgreSQL/SQLite
 
 ---
-## Env
+
+## ⚙️ Variables de Entorno
+
+Copiar `.env.example` como `.env` y configurar:
+
+```bash
 # ============================================
 # 🚗 TALLER FRENOS AGUILERA - Variables de Entorno
 # ============================================
-# Copiar este archivo como .env y configurar los valores reales.
-# NUNCA subir el archivo .env a git (ya está en .gitignore)
 
-# ============================================
 # 🌐 SERVIDOR
-# ============================================
-# Puerto donde correrá la aplicación NestJS
 PORT=3000
-
-# URL del frontend (para CORS). Usar 'true' para permitir todo en desarrollo.
 FRONTEND_URL=http://localhost:5173
-
-# Entorno de ejecución: development | production | test
 NODE_ENV=development
 
-# ============================================
-# 🗄️ BASE DE DATOS
-# ============================================
-# Tipo de base de datos: sqlite | postgres | mysql
+# 🗄️ BASE DE DATOS (SQLite para desarrollo)
 DB_TYPE=sqlite
-
-# Ruta del archivo SQLite (solo para DB_TYPE=sqlite)
 DB_DATABASE=./taller.db
+DB_SYNCHRONIZE=true
 
-# Configuración PostgreSQL (solo para DB_TYPE=postgres)
+# 🗄️ BASE DE DATOS (PostgreSQL para producción)
+# DB_TYPE=postgres
 # DB_HOST=localhost
 # DB_PORT=5432
 # DB_DATABASE=taller_frenos
 # DB_USERNAME=postgres
 # DB_PASSWORD=CHANGE_THIS_PASSWORD
+# DB_SYNCHRONIZE=false
 
-# Sincronizar esquema automáticamente (SOLO en desarrollo, NUNCA en producción)
-DB_SYNCHRONIZE=true
-
-# ============================================
 # 🔐 AUTENTICACIÓN JWT
-# ============================================
-# Secreto para firmar tokens JWT - CAMBIAR EN PRODUCCIÓN
-# Generar con: node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 JWT_SECRET=CHANGE_THIS_SECRET_IN_PRODUCTION_USE_RANDOM_STRING
-
-# Tiempo de expiración del token JWT
-# Ejemplos: 8h (8 horas), 1d (1 día), 30m (30 minutos)
 JWT_EXPIRES_IN=8h
 
-# ============================================
-# 📧 CONFIGURACIÓN ADICIONAL (FUTURO)
-# ============================================
-# EMAIL_HOST=smtp.gmail.com
-# EMAIL_PORT=587
-# EMAIL_USER=taller@example.com
-# EMAIL_PASSWORD=app_password_here
-
-# ============================================
 # 🔍 LOGGING
-# ============================================
-# Nivel de logs: debug | info | warn | error
 LOG_LEVEL=debug
+```
 
-# ============================================
-# ⚠️ NOTAS DE SEGURIDAD PARA PRODUCCIÓN
-# ============================================
-# 1. Cambiar JWT_SECRET por un string aleatorio largo
-# 2. Configurar DB_SYNCHRONIZE=false
-# 3. Usar PostgreSQL en lugar de SQLite
-# 4. Configurar FRONTEND_URL con el dominio real
-# 5. Usar variables de entorno del proveedor cloud (no archivo .env)
+> ⚠️ **Producción:** Cambiar `JWT_SECRET`, usar PostgreSQL, y `DB_SYNCHRONIZE=false`
 
+---
 
 ## 🚀 Quick Start
 
@@ -115,12 +83,11 @@ npm run start:dev
 
 | Documento | Descripción |
 |-----------|-------------|
-| [📖 Guía Completa API](docs/API_GUIDE.md) | Endpoints, DTOs y ejemplos de uso |
-| [🔐 Autenticación](docs/AUTENTICACION.md) | Sistema JWT, roles y protección de rutas |
-| [🧪 Testing](docs/TESTS.md) | Guía de ejecución de tests E2E |
-| [💰 Módulo Ventas](docs/COUNTER_SALES_MODULE.md) | Ventas de mostrador y movimientos |
-| [📋 Informe Técnico](docs/INFORME_TECNICO_FINAL.md) | Arquitectura y decisiones de diseño |
-| [🔒 Proteger Endpoints](docs/PROTEGER_ENDPOINTS.md) | Guía de protección con JWT y roles |
+| [� Code Review](docs/CODE_REVIEW.md) | Arquitectura, patrones, lógica de negocio y tests |
+| [👨‍🎨 Frontend Guide](docs/FRONTEND_GUIDE.md) | DTOs, endpoints, mockups para el equipo Frontend |
+| [👩‍💼 README Ejecutivo](docs/README_EJECUTIVO.md) | Resumen no-técnico para gerencia |
+| [🆕 Start Here](docs/START_HERE.md) | Guía de inicio para nuevos desarrolladores |
+| [🔐 Auditoría](docs/AUDIT_EXECUTIVE_SUMMARY.md) | Sistema de auditoría y trazabilidad |
 
 ---
 
