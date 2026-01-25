@@ -4,41 +4,53 @@
 
 ---
 
+
 ## ⚙️ Variables de Entorno
 
-Copiar `.env.example` como `.env` y configurar:
+Copiar `.env.example` como `.env` y configurar los valores reales:
 
-```bash
-# ============================================
+```dotenv
 # 🚗 TALLER FRENOS AGUILERA - Variables de Entorno
-# ============================================
+# 
 
 # 🌐 SERVIDOR
 PORT=3000
 FRONTEND_URL=http://localhost:5173
 NODE_ENV=development
 
-# 🗄️ BASE DE DATOS (SQLite para desarrollo)
+# 🗄️ BASE DE DATOS
 DB_TYPE=sqlite
 DB_DATABASE=./taller.db
 DB_SYNCHRONIZE=true
-
-# 🗄️ BASE DE DATOS (PostgreSQL para producción)
-# DB_TYPE=postgres
-# DB_HOST=localhost
-# DB_PORT=5432
-# DB_DATABASE=taller_frenos
-# DB_USERNAME=postgres
-# DB_PASSWORD=CHANGE_THIS_PASSWORD
-# DB_SYNCHRONIZE=false
+# Para producción (PostgreSQL):
+DB_TYPE=postgres
+DB_HOST=localhost
+DB_PORT=5432
+DB_DATABASE=taller_frenos
+DB_USERNAME=postgres
+DB_PASSWORD=CHANGE_THIS_PASSWORD
+DB_SYNCHRONIZE=false
 
 # 🔐 AUTENTICACIÓN JWT
 JWT_SECRET=CHANGE_THIS_SECRET_IN_PRODUCTION_USE_RANDOM_STRING
 JWT_EXPIRES_IN=8h
 
+# 📧 EMAIL (futuro)
+EMAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USER=taller@example.com
+MAIL_PASSWORD=app_password_here
+
 # 🔍 LOGGING
 LOG_LEVEL=debug
 ```
+
+> ⚠️ **Notas de seguridad para producción:**
+> 1. Cambiar `JWT_SECRET` por un string aleatorio largo
+> 2. Configurar `DB_SYNCHRONIZE=false`
+> 3. Usar PostgreSQL en lugar de SQLite
+> 4. Configurar `FRONTEND_URL` con el dominio real
+> 5. Usar variables de entorno del proveedor cloud (no archivo .env)
 
 > ⚠️ **Producción:** Cambiar `JWT_SECRET`, usar PostgreSQL, y `DB_SYNCHRONIZE=false`
 
