@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  # Tu Backend NestJS
+  api:
+    build: .
+    container_name: taller_backend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      # Conexión interna a la base de datos (nombre del servicio 'db')
+      - DATABASE_URL=postgres://taller_user:password_segura_123@db:5432/taller_db
+      - PORT=3000
+      - JWT_SECRET=mi_secreto_super_seguro_cambiar_esto
+      # Si usas otras variables en tu .env, agrégalas aquí
+    depends_on:
+      - db
+    networks:
+      - taller_network
+
+  # Base de Datos PostgreSQL
+  db:
+    image: postgres:15-alpine
+    container_name: taller_db
+    restart: always
+    environment:
+      POSTGRES_USER: taller_user
+      POSTGRES_PASSWORD: password_segura_123
+      POSTGRES_DB: taller_db
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - taller_network
+
+volumes:
+  pg_data:
+
+networks:
+  taller_network:
