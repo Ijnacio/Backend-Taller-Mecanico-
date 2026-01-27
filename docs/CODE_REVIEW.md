@@ -48,6 +48,69 @@ src/
 │   ├── entities/
 │   │   └── user.entity.ts     # id, rut, password (hash), nombre, role
 │   └── enums/
+│       └── user-role.enum.ts  # ADMIN, WORKER
+│
+├── products/                  # 📦 Inventario
+│   ├── products.controller.ts
+│   ├── products.service.ts
+│   ├── dto/
+│   │   ├── create-product.dto.ts
+│   │   └── update-product.dto.ts
+│   └── entities/
+│       └── product.entity.ts  # sku, nombre, stock, precio, modelos_compatibles
+│
+├── categories/                # 🏷️ Categorías de productos
+│   └── entities/
+│       └── category.entity.ts
+│
+├── vehicle-models/            # 🚗 Modelos para compatibilidad
+│   ├── vehicle-models.controller.ts
+│   ├── vehicle-models.service.ts
+│   ├── dto/
+│   └── entities/
+│       └── vehicle-model.entity.ts  # marca, modelo, anio (sin patente)
+│
+├── vehicles/                  # 🚙 Vehículos de clientes
+│   └── entities/
+│       └── vehicle.entity.ts  # patente, marca, modelo, kilometraje, cliente
+│
+├── clients/                   # 👥 Base de datos de clientes
+│   └── entities/
+│       └── client.entity.ts
+│
+├── providers/                 # 🏢 Proveedores (ADMIN)
+│   └── entities/
+│       └── provider.entity.ts
+│
+├── purchases/                 # 🛒 Compras a proveedores (ADMIN)
+│   ├── purchases.controller.ts
+│   ├── purchases.service.ts
+│   └── entities/
+│       ├── purchase.entity.ts
+│       └── purchase-detail.entity.ts
+│
+├── work-orders/               # 📋 Órdenes de trabajo
+│   ├── work-orders.controller.ts
+│   ├── work-orders.service.ts
+│   ├── constants/
+│   │   └── services.constant.ts  # Catálogo de servicios
+│   └── entities/
+│       ├── work-order.entity.ts
+│       └── work-order-detail.entity.ts
+│
+├── counter-sales/             # 💰 Ventas mostrador
+│   ├── counter-sales.controller.ts
+│   ├── counter-sales.service.ts
+│   ├── enums/
+│   │   └── movement-type.enum.ts  # VENTA, PERDIDA, USO_INTERNO
+│   └── entities/
+│       ├── counter-sale.entity.ts
+│       └── counter-sale-detail.entity.ts
+│
+└── reports/                   # 📊 Reportes
+    ├── reports.controller.ts
+    └── reports.service.ts
+```
 │       └── user-role.enum.ts  # ADMIN | WORKER
 │
 ├── products/                  # 📦 Inventario
@@ -344,7 +407,44 @@ PROCESO:
 4. Auditoría: createdByName = usuario del JWT
 ```
 
-### 3.4 Reports (Reportes)
+### 3.4 Vehicle Models (Compatibilidad de Productos)
+
+**Archivo:** `src/vehicle-models/vehicle-models.service.ts`
+
+```
+DIFERENCIA CLAVE:
+┌────────────────┬──────────────┬────────────────┬──────────────┐
+│ Entidad        │ Patente      │ Uso            │ Relación     │
+├────────────────┼──────────────┼────────────────┼──────────────┤
+│ VehicleModel   │ ❌ No tiene  │ Compatibilidad │ Product      │
+│                │              │ de productos   │ (ManyToMany) │
+├────────────────┼──────────────┼────────────────┼──────────────┤
+│ Vehicle        │ ✅ Sí tiene  │ Vehículo real  │ Client       │
+│                │              │ de cliente     │ WorkOrder    │
+└────────────────┴──────────────┴────────────────┴──────────────┘
+
+EJEMPLO:
+VehicleModel: "Toyota Corolla 2020" (genérico)
+   ↓ Compatible con producto "Pastilla Bosch F-001"
+Vehicle: "ABCD12 - Toyota Corolla 2020" (del cliente Juan Pérez)
+   ↓ Se usa en WorkOrder
+```
+
+**Endpoints especiales:**
+```typescript
+// Selector cascada en frontend
+GET /vehicle-models/marcas
+// → ["Toyota", "Honda", "Chevrolet"]
+
+GET /vehicle-models/marcas/Toyota/modelos
+// → ["Corolla", "Yaris", "Hilux"]
+
+// Autocompletado
+GET /vehicle-models/search?q=cor
+// → [{ id, marca: "Toyota", modelo: "Corolla", anio: 2020 }]
+```
+
+### 3.5 Reports (Reportes)
 
 **Archivo:** `src/reports/reports.service.ts`
 
