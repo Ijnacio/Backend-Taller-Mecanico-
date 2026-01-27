@@ -17,7 +17,7 @@ async function bootstrap() {
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,
-      transform: true, // Transforma los datos automáticamente
+      transform: true,
     }),
   );
 
@@ -26,15 +26,13 @@ async function bootstrap() {
     .setTitle('API Taller Mecánico')
     .setDescription('Documentación de endpoints para el Taller')
     .setVersion('1.0')
-    .addBearerAuth() // Añade botón para meter el Token JWT
+    .addBearerAuth()
     .build();
   
   const document = SwaggerModule.createDocument(app, config);
-  // La ruta será: http://IP:3000/docs
   SwaggerModule.setup('docs', app, document);
 
-  // 5. INICIAR SERVIDOR (¡IMPORTANTE: '0.0.0.0'!)
-  // Si no pones '0.0.0.0', Oracle no dejará que entres desde tu casa.
+  // 5. INICIAR SERVIDOR (Escuchando en 0.0.0.0 para Oracle Cloud)
   await app.listen(3000, '0.0.0.0');
   
   console.log(`🚀 Server running on port 3000`);

@@ -1,39 +1,35 @@
 import { DataSource } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import * as dotenv from 'dotenv';
 import { User } from './users/entities/user.entity';
 import { Product } from './products/entities/product.entity';
 import { Category } from './categories/entities/category.entity';
 import { UserRole } from './users/enums/user-role.enum';
+// Importa otras entidades si las necesitas para que TypeORM las detecte en el seed
 
-/**
- * SEED COMPLETO - Taller Frenos Aguilera
- * Ejecutar con: npm run seed
- *
- * Crea:
- * - 2 Usuarios (ADMIN + WORKER)
- * - 4 Categorías
- * - 3 Productos de prueba (1 con stock bajo para probar alerta)
- */
+dotenv.config();
+
 async function seed() {
   const dataSource = new DataSource({
-    type: 'sqlite',
-    database: 'taller.db',
-    entities: [__dirname + '/**/*.entity{.ts,.js}'],
-    synchronize: true,
+    type: 'postgres', 
+    host: process.env.DB_HOST || 'localhost',
+    // PARCHE: parseInt para el puerto
+    port: parseInt(process.env.DB_PORT || '5432'),
+    username: process.env.DB_USERNAME || 'postgres',
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_DATABASE || 'taller_mecanico',
+    entities: [__dirname + '/**/*.entity{.ts,.js}'], 
+    synchronize: true, 
   });
 
   await dataSource.initialize();
-  console.log('🌱 Iniciando carga de datos (Seed)...\n');
+  console.log('🌱 Iniciando carga de datos (Seed) en POSTGRES...\n');
 
   const userRepo = dataSource.getRepository(User);
   const catRepo = dataSource.getRepository(Category);
   const prodRepo = dataSource.getRepository(Product);
 
-  // =========================================================
   // 1. USUARIOS
-  // =========================================================
-
-  // ADMIN (Dueña - Jefa del Taller)
   const rutAdmin = '111111111';
   if (!(await userRepo.findOneBy({ rut: rutAdmin }))) {
     const hash = await bcrypt.hash('admin123', 10);
@@ -49,7 +45,6 @@ async function seed() {
     console.log('⏭️  Usuario ADMIN ya existe');
   }
 
-  // WORKER (Cuenta compartida del Taller)
   const rutTaller = '999999999';
   if (!(await userRepo.findOneBy({ rut: rutTaller }))) {
     const hash = await bcrypt.hash('taller123', 10);
@@ -65,11 +60,10 @@ async function seed() {
     console.log('⏭️  Usuario WORKER ya existe');
   }
 
-  // =========================================================
   // 2. CATEGORÍAS
-  // =========================================================
   const categorias = ['Frenos', 'Suspensión', 'Motor', 'Lubricantes'];
-  const catsGuardadas: Category[] = [];
+  // PARCHE: Tipado any[] para poder hacer push sin error
+  const catsGuardadas: any[] = [];
 
   for (const nombre of categorias) {
     let cat = await catRepo.findOneBy({ nombre });
@@ -83,34 +77,11 @@ async function seed() {
   }
   console.log('✅ Categorías creadas/verificadas');
 
-  // =========================================================
-  // 3. PRODUCTOS DE PRUEBA
-  // =========================================================
+  // 3. PRODUCTOS
   const productos = [
-    {
-      sku: 'F-001',
-      nombre: 'Pastilla Delantera Yaris',
-      precio: 25000,
-      stock: 10,
-      min: 2,
-      cat: catsGuardadas[0],
-    },
-    {
-      sku: 'F-002',
-      nombre: 'Disco Ventilado',
-      precio: 18000,
-      stock: 4,
-      min: 5,
-      cat: catsGuardadas[0],
-    }, // ⚠️ Stock Bajo!
-    {
-      sku: 'L-001',
-      nombre: 'Aceite 10W40',
-      precio: 35000,
-      stock: 20,
-      min: 5,
-      cat: catsGuardadas[3],
-    },
+    { sku: 'F-001', nombre: 'Pastilla Delantera Yaris', precio: 25000, stock: 10, min: 2, cat: catsGuardadas[0] },
+    { sku: 'F-002', nombre: 'Disco Ventilado', precio: 18000, stock: 4, min: 5, cat: catsGuardadas[0] },
+    { sku: 'L-001', nombre: 'Aceite 10W40', precio: 35000, stock: 20, min: 5, cat: catsGuardadas[3] },
   ];
 
   for (const p of productos) {
@@ -128,27 +99,7 @@ async function seed() {
   }
   console.log('✅ Productos de prueba cargados');
 
-  // =========================================================
-  // RESUMEN FINAL
-  // =========================================================
-  console.log('\n');
-  console.log('╔═══════════════════════════════════════════════════════════╗');
-  console.log('║               🏁 SEED FINALIZADO CON ÉXITO                ║');
-  console.log('╠═══════════════════════════════════════════════════════════╣');
-  console.log('║                                                           ║');
-  console.log('║  👤 USUARIO ADMIN (Dueña):                                ║');
-  console.log('║     RUT:        11.111.111-1                              ║');
-  console.log('║     Contraseña: admin123                                  ║');
-  console.log('║                                                           ║');
-  console.log('║  👷 USUARIO WORKER (Taller):                              ║');
-  console.log('║     RUT:        99.999.999-9                              ║');
-  console.log('║     Contraseña: taller123                                 ║');
-  console.log('║                                                           ║');
-  console.log('╠═══════════════════════════════════════════════════════════╣');
-  console.log('║  ⚠️  IMPORTANTE: Cambia estas contraseñas en producción   ║');
-  console.log('╚═══════════════════════════════════════════════════════════╝');
-  console.log('\n');
-
+  console.log('\n🏁 SEED FINALIZADO CON ÉXITO EN POSTGRES 🏁\n');
   await dataSource.destroy();
 }
 
