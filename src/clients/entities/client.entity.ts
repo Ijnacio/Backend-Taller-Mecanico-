@@ -25,6 +25,9 @@ export class Client {
   @Column({ nullable: true })
   telefono: string;
 
+  @Column({ nullable: true })
+  direccion: string;
+
   @OneToMany(() => WorkOrder, (order) => order.cliente)
   ordenes: WorkOrder[];
 }

@@ -9,6 +9,9 @@ export class Category {
   @Column({ unique: true })
   nombre: string; // Ej: "Frenos", "Aceites", "Filtros"
 
+  @Column({ nullable: true })
+  descripcion: string; // Descripción de la categoría
+
   // Una categoría tiene muchos productos
   @OneToMany(() => Product, (product) => product.categoria)
   productos: Product[];

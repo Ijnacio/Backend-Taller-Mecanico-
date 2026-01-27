@@ -9,6 +9,12 @@ export class Provider {
   @Column({ unique: true })
   nombre: string; // Ej: "Repuestos Don Gato"
 
+  @Column({ nullable: true })
+  telefono: string; // Teléfono de contacto
+
+  @Column({ nullable: true })
+  email: string; // Email de contacto
+
   // Relación: Un proveedor tiene muchas facturas asociadas
   @OneToMany(() => Purchase, (purchase) => purchase.proveedor)
   compras: Purchase[];
