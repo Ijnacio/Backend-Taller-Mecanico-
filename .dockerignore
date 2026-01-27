@@ -1,3 +1,13 @@
 node_modules
 dist
+<<<<<<< HEAD
 .git
+=======
+.git
+.env
+Dockerfile
+.dockerignore
+docker-compose.yml
+test
+README.md
+>>>>>>> 0ea5e2679475b00ba3a21e90c12365fa727a9940
