@@ -1,10 +1,11 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { ValidationPipe } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-<<<<<<< HEAD
   // 1. ACTIVAR CORS (Permite acceso desde cualquier lado por ahora)
   app.enableCors();
 
@@ -40,17 +41,3 @@ async function bootstrap() {
   console.log(`📄 Swagger available at /docs`);
 }
 bootstrap();
-=======
-  // ESTA ES LA LÍNEA MÁGICA QUE NECESITAS
-  app.setGlobalPrefix('api');
-
-  // Habilitar CORS para que Vercel pueda entrar
-  app.enableCors({
-    origin: '*', // O la URL de tu frontend en Vercel
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  });
-
-  await app.listen(3000);
-}
-bootstrap();
->>>>>>> 0ea5e2679475b00ba3a21e90c12365fa727a9940
