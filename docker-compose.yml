@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  # 1. Base de Datos
+  db:
+    image: postgres:15-alpine
+    container_name: taller_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DATABASE}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - taller_net
+
+  # 2. Tu Backend (NestJS)
+  backend:
+    build: .
+    container_name: taller_backend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - DB_HOST=db  # Importante: se llama igual que el servicio de arriba
+      - DB_PORT=5432
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_DATABASE=${DB_DATABASE}
+      - JWT_SECRET=${JWT_SECRET}
+      - FRONTEND_URL=${FRONTEND_URL}
+      - DB_SYNCHRONIZE=true
+    depends_on:
+      - db
+    networks:
+      - taller_net
+
+  # 3. NocoDB (Panel Visual)
+  nocodb:
+    image: nocodb/nocodb:latest
+    container_name: taller_nocodb
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      # Cadena de conexión mágica para que NocoDB vea tu Postgres
+      - NC_DB=pg://${DB_HOST}:5432?u=${DB_USERNAME}&p=${DB_PASSWORD}&d=${DB_DATABASE}
+    depends_on:
+      - db
+    networks:
+      - taller_net
+
+volumes:
+  postgres_data:
+
+networks:
+  taller_net:

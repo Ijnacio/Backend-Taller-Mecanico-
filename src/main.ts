@@ -6,36 +6,38 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // 1. Habilitar CORS (Para que el Frontend de Fran pueda conectarse)
-  app.enableCors({
-    origin: process.env.FRONTEND_URL || true, // true = cualquier origen en dev
-    credentials: true,
-  });
+  // 1. ACTIVAR CORS (Permite acceso desde cualquier lado por ahora)
+  app.enableCors();
 
-  // 2. Prefijo Global (Tus rutas ahora serán /api/products, /api/auth, etc.)
+  // 2. PREFIJO GLOBAL (Tus rutas serán /api/auth, /api/products, etc.)
   app.setGlobalPrefix('api');
 
-  // 3. Activación de Validaciones (DTOs)
+  // 3. VALIDACIONES (Para que funcionen los DTOs)
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true, // Elimina campos que no estén en el DTO (Seguridad)
-      forbidNonWhitelisted: true, // Tira error si mandan basura extra
-      transform: true, // Convierte "10" (string) a 10 (number) automáticamente
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true, // Transforma los datos automáticamente
     }),
   );
 
-  // 4. Configuración de Swagger (Documentación)
+  // 4. CONFIGURACIÓN DE SWAGGER (La documentación)
   const config = new DocumentBuilder()
-    .setTitle('API Taller Frenos Aguilera')
-    .setDescription('Documentación del Backend para gestión de Taller')
+    .setTitle('API Taller Mecánico')
+    .setDescription('Documentación de endpoints para el Taller')
     .setVersion('1.0')
-    .addBearerAuth() // Botón para meter el Token
+    .addBearerAuth() // Añade botón para meter el Token JWT
     .build();
+  
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, document); // Docu en /docs
+  // La ruta será: http://IP:3000/docs
+  SwaggerModule.setup('docs', app, document);
 
-  await app.listen(process.env.PORT ?? 3000);
-  console.log(`🚀 Servidor corriendo en: http://localhost:3000/api`);
-  console.log(`📄 Documentación Swagger: http://localhost:3000/docs`);
+  // 5. INICIAR SERVIDOR (¡IMPORTANTE: '0.0.0.0'!)
+  // Si no pones '0.0.0.0', Oracle no dejará que entres desde tu casa.
+  await app.listen(3000, '0.0.0.0');
+  
+  console.log(`🚀 Server running on port 3000`);
+  console.log(`📄 Swagger available at /docs`);
 }
-void bootstrap();
+bootstrap();
