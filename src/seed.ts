@@ -7,6 +7,15 @@ import { Category } from './categories/entities/category.entity';
 import { VehicleModel } from './vehicle-models/entities/vehicle-model.entity';
 import { UserRole } from './users/enums/user-role.enum';
 
+/**
+ * SEED DE DESARROLLO
+ * Crea usuarios + datos de prueba (categorías, productos, modelos de vehículos)
+ * 
+ * Ejecutar: npx ts-node src/seed.ts
+ * 
+ * Para producción usar: npx ts-node src/seed-production.ts
+ */
+
 dotenv.config();
 
 async function seed() {
