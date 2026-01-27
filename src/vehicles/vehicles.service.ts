@@ -1,28 +1,73 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
 import { UpdateVehicleDto } from './dto/update-vehicle.dto';
+import { Vehicle } from './entities/vehicle.entity';
 
 @Injectable()
 export class VehiclesService {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  create(_createVehicleDto: CreateVehicleDto) {
-    return 'This action adds a new vehicle';
+  constructor(
+    @InjectRepository(Vehicle)
+    private readonly vehicleRepository: Repository<Vehicle>,
+  ) {}
+
+  async create(createVehicleDto: CreateVehicleDto): Promise<Vehicle> {
+    // Normalizar patente a mayúsculas sin guiones
+    const patenteNormalizada = createVehicleDto.patente
+      .replace(/-/g, '')
+      .toUpperCase();
+
+    // Verificar si ya existe un vehículo con esa patente
+    const existing = await this.vehicleRepository.findOne({
+      where: { patente: patenteNormalizada },
+    });
+    if (existing) {
+      throw new ConflictException(`Ya existe un vehículo con patente ${patenteNormalizada}`);
+    }
+
+    const vehicle = this.vehicleRepository.create({
+      ...createVehicleDto,
+      patente: patenteNormalizada,
+    });
+    return this.vehicleRepository.save(vehicle);
   }
 
-  findAll() {
-    return `This action returns all vehicles`;
+  async findAll(): Promise<Vehicle[]> {
+    return this.vehicleRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} vehicle`;
+  async findOne(id: string): Promise<Vehicle> {
+    const vehicle = await this.vehicleRepository.findOne({
+      where: { id },
+    });
+    if (!vehicle) {
+      throw new NotFoundException(`Vehículo con ID ${id} no encontrado`);
+    }
+    return vehicle;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  update(id: number, _updateVehicleDto: UpdateVehicleDto) {
-    return `This action updates a #${id} vehicle`;
+  async findByPatente(patente: string): Promise<Vehicle | null> {
+    const patenteNormalizada = patente.replace(/-/g, '').toUpperCase();
+    return this.vehicleRepository.findOne({
+      where: { patente: patenteNormalizada },
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} vehicle`;
+  async update(id: string, updateVehicleDto: UpdateVehicleDto): Promise<Vehicle> {
+    const vehicle = await this.findOne(id);
+    
+    // Si viene patente, normalizarla
+    if (updateVehicleDto.patente) {
+      updateVehicleDto.patente = updateVehicleDto.patente.replace(/-/g, '').toUpperCase();
+    }
+    
+    Object.assign(vehicle, updateVehicleDto);
+    return this.vehicleRepository.save(vehicle);
+  }
+
+  async remove(id: string): Promise<void> {
+    const vehicle = await this.findOne(id);
+    await this.vehicleRepository.remove(vehicle);
   }
 }

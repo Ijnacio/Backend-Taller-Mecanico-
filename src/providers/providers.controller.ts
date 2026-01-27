@@ -15,7 +15,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../users/enums/user-role.enum';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @ApiTags('Proveedores')
 @ApiBearerAuth()
@@ -36,20 +36,29 @@ export class ProvidersController {
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Obtener un proveedor por ID' })
+  @ApiResponse({ status: 200, description: 'Proveedor encontrado' })
+  @ApiResponse({ status: 404, description: 'Proveedor no encontrado' })
   findOne(@Param('id') id: string) {
-    return this.providersService.findOne(+id);
+    return this.providersService.findOne(id);
   }
 
   @Patch(':id')
+  @ApiOperation({ summary: 'Actualizar un proveedor' })
+  @ApiResponse({ status: 200, description: 'Proveedor actualizado' })
+  @ApiResponse({ status: 404, description: 'Proveedor no encontrado' })
   update(
     @Param('id') id: string,
     @Body() updateProviderDto: UpdateProviderDto,
   ) {
-    return this.providersService.update(+id, updateProviderDto);
+    return this.providersService.update(id, updateProviderDto);
   }
 
   @Delete(':id')
+  @ApiOperation({ summary: 'Eliminar un proveedor' })
+  @ApiResponse({ status: 200, description: 'Proveedor eliminado' })
+  @ApiResponse({ status: 404, description: 'Proveedor no encontrado' })
   remove(@Param('id') id: string) {
-    return this.providersService.remove(+id);
+    return this.providersService.remove(id);
   }
 }
