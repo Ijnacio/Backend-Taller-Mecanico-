@@ -6,8 +6,13 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // 1. ACTIVAR CORS (Permite acceso desde cualquier lado por ahora)
-  app.enableCors();
+  // 1. ACTIVAR CORS (Permite acceso desde Vercel, localhost, etc.)
+  app.enableCors({
+    origin: '*', // Permite conexión desde cualquier origen
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+    allowedHeaders: 'Content-Type,Authorization',
+  });
 
   // 2. PREFIJO GLOBAL (Tus rutas serán /api/auth, /api/products, etc.)
   app.setGlobalPrefix('api');
