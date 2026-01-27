@@ -10,7 +10,6 @@ async function bootstrap() {
   app.enableCors({
     origin: '*', // Permite conexión desde cualquier origen
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    credentials: false,
     allowedHeaders: 'Content-Type,Authorization',
   });
 
