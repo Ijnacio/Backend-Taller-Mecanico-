@@ -4,50 +4,72 @@ import {
   IsArray,
   ValidateNested,
   IsOptional,
+  IsUUID,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-// ... imports
 class PurchaseItemDto {
+  @ApiProperty({ example: 'F-001', description: 'SKU del producto' })
   @IsString()
   sku: string;
 
+  @ApiProperty({ example: 'Pastilla de Freno', description: 'Nombre del producto' })
   @IsString()
-  nombre: string; // Nombre para el producto nuevo
+  nombre: string;
 
-  @IsString()
-  @IsOptional()
-  marca: string;
-
+  @ApiPropertyOptional({ example: 'Bosch', description: 'Marca del producto' })
   @IsString()
   @IsOptional()
-  calidad: string;
+  marca?: string;
 
+  @ApiPropertyOptional({ example: 'Cerámica', description: 'Calidad del producto' })
+  @IsString()
+  @IsOptional()
+  calidad?: string;
+
+  @ApiPropertyOptional({
+    example: ['uuid-modelo-1', 'uuid-modelo-2'],
+    description: 'IDs de modelos de vehículos compatibles',
+    type: [String],
+  })
   @IsArray()
+  @IsUUID('4', { each: true })
   @IsOptional()
-  vehiculos_ids: string[]; // <--- NUEVO: IDs de los autos compatibles (Ej: ["uuid-1", "uuid-2"])
+  modelos_compatibles_ids?: string[];
 
+  @ApiProperty({ example: 10, description: 'Cantidad a comprar' })
   @IsInt()
   cantidad: number;
 
+  @ApiProperty({ example: 15000, description: 'Precio de costo unitario en CLP' })
   @IsInt()
-  precio_costo: number; // Costo real (lo que salió del bolsillo)
+  precio_costo: number;
 
+  @ApiProperty({ example: 28000, description: 'Precio de venta sugerido en CLP' })
   @IsInt()
   precio_venta_sugerido: number;
 }
 
 export class CreatePurchaseDto {
+  @ApiProperty({ example: 'Repuestos Chile', description: 'Nombre del proveedor' })
   @IsString()
   proveedor_nombre: string;
 
+  @ApiPropertyOptional({ example: 'F-12345', description: 'Número de documento/factura' })
   @IsString()
   @IsOptional()
-  numero_documento: string; // Puede ser Factura o simplemente "Recibo Manual"
+  numero_documento?: string;
 
+  @ApiProperty({
+    example: 'FACTURA',
+    description: 'Tipo de documento (FACTURA calcula IVA, INFORMAL no)',
+    enum: ['FACTURA', 'INFORMAL'],
+  })
   @IsString()
-  tipo_documento: 'FACTURA' | 'INFORMAL'; // <--- NUEVO: Para decidir si calculamos IVA
+  tipo_documento: 'FACTURA' | 'INFORMAL';
 
+  @ApiProperty({ type: [PurchaseItemDto], description: 'Lista de productos a comprar' })
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => PurchaseItemDto)

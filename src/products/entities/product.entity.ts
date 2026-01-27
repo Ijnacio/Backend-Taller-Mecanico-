@@ -6,8 +6,8 @@ import {
   ManyToMany,
   JoinTable,
 } from 'typeorm';
-import { Category } from '../../categories/entities/category.entity'; // <--- IMPORTAR
-import { Vehicle } from '../../vehicles/entities/vehicle.entity';
+import { Category } from '../../categories/entities/category.entity';
+import { VehicleModel } from '../../vehicle-models/entities/vehicle-model.entity';
 
 @Entity()
 export class Product {
@@ -33,13 +33,18 @@ export class Product {
   stock_actual: number;
 
   @Column('int', { default: 5 })
-  stock_minimo: number; // Para la alerta [cite: 35]
+  stock_minimo: number; // Para la alerta
 
-  @ManyToMany(() => Vehicle, (vehicle) => vehicle.productosCompatibles, {
+  // Modelos de vehículos compatibles (marca + modelo + año, sin patente)
+  @ManyToMany(() => VehicleModel, (vehicleModel) => vehicleModel.productos, {
     cascade: true,
   })
-  @JoinTable()
-  vehiculosCompatibles: Vehicle[];
+  @JoinTable({
+    name: 'product_vehicle_models',
+    joinColumn: { name: 'product_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'vehicle_model_id', referencedColumnName: 'id' },
+  })
+  modelosCompatibles: VehicleModel[];
 
   // RELACIÓN CON CATEGORÍA (Para los filtros)
   @ManyToOne(() => Category, (category) => category.productos, {

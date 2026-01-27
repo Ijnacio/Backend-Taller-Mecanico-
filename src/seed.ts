@@ -4,8 +4,8 @@ import * as dotenv from 'dotenv';
 import { User } from './users/entities/user.entity';
 import { Product } from './products/entities/product.entity';
 import { Category } from './categories/entities/category.entity';
+import { VehicleModel } from './vehicle-models/entities/vehicle-model.entity';
 import { UserRole } from './users/enums/user-role.enum';
-// Importa otras entidades si las necesitas para que TypeORM las detecte en el seed
 
 dotenv.config();
 
@@ -28,6 +28,7 @@ async function seed() {
   const userRepo = dataSource.getRepository(User);
   const catRepo = dataSource.getRepository(Category);
   const prodRepo = dataSource.getRepository(Product);
+  const vehicleModelRepo = dataSource.getRepository(VehicleModel);
 
   // 1. USUARIOS
   const rutAdmin = '111111111';
@@ -77,7 +78,32 @@ async function seed() {
   }
   console.log('✅ Categorías creadas/verificadas');
 
-  // 3. PRODUCTOS
+  // 3. MODELOS DE VEHÍCULOS (para compatibilidad de productos)
+  const modelosVehiculos = [
+    { marca: 'Toyota', modelo: 'Yaris', anio: 2018 },
+    { marca: 'Toyota', modelo: 'Yaris', anio: 2019 },
+    { marca: 'Toyota', modelo: 'Corolla', anio: 2020 },
+    { marca: 'Nissan', modelo: 'V16', anio: 2015 },
+    { marca: 'Chevrolet', modelo: 'Spark', anio: 2017 },
+  ];
+
+  const modelosGuardados: VehicleModel[] = [];
+  for (const m of modelosVehiculos) {
+    let modelo = await vehicleModelRepo.findOne({
+      where: { marca: m.marca, modelo: m.modelo, anio: m.anio },
+    });
+    if (!modelo) {
+      modelo = await vehicleModelRepo.save({
+        marca: m.marca,
+        modelo: m.modelo,
+        anio: m.anio,
+      });
+    }
+    modelosGuardados.push(modelo);
+  }
+  console.log('✅ Modelos de vehículos creados/verificados');
+
+  // 4. PRODUCTOS
   const productos = [
     { sku: 'F-001', nombre: 'Pastilla Delantera Yaris', precio: 25000, stock: 10, min: 2, cat: catsGuardadas[0] },
     { sku: 'F-002', nombre: 'Disco Ventilado', precio: 18000, stock: 4, min: 5, cat: catsGuardadas[0] },

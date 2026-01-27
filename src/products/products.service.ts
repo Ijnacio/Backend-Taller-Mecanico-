@@ -1,10 +1,11 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Product } from './entities/product.entity';
 import { Category } from '../categories/entities/category.entity';
+import { VehicleModel } from '../vehicle-models/entities/vehicle-model.entity';
 
 @Injectable()
 export class ProductsService {
@@ -13,6 +14,8 @@ export class ProductsService {
     private readonly productRepository: Repository<Product>,
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
+    @InjectRepository(VehicleModel)
+    private readonly vehicleModelRepository: Repository<VehicleModel>,
   ) {}
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
@@ -37,19 +40,30 @@ export class ProductsService {
       product.categoria = categoria;
     }
 
+    // Si vienen modelosCompatiblesIds, buscar y asignar
+    if (createProductDto.modelosCompatiblesIds && createProductDto.modelosCompatiblesIds.length > 0) {
+      const modelos = await this.vehicleModelRepository.find({
+        where: { id: In(createProductDto.modelosCompatiblesIds) },
+      });
+      if (modelos.length !== createProductDto.modelosCompatiblesIds.length) {
+        throw new NotFoundException('Algunos modelos de vehículo no fueron encontrados');
+      }
+      product.modelosCompatibles = modelos;
+    }
+
     return this.productRepository.save(product);
   }
 
   async findAll(): Promise<Product[]> {
     return this.productRepository.find({
-      relations: ['categoria'],
+      relations: ['categoria', 'modelosCompatibles'],
     });
   }
 
   async findOne(id: string): Promise<Product> {
     const product = await this.productRepository.findOne({
       where: { id },
-      relations: ['categoria'],
+      relations: ['categoria', 'modelosCompatibles'],
     });
     if (!product) {
       throw new NotFoundException(`Producto con ID ${id} no encontrado`);
@@ -71,7 +85,25 @@ export class ProductsService {
       product.categoria = categoria;
     }
 
-    Object.assign(product, updateProductDto);
+    // Si vienen modelosCompatiblesIds, actualizar la relación
+    if (updateProductDto.modelosCompatiblesIds !== undefined) {
+      if (updateProductDto.modelosCompatiblesIds.length > 0) {
+        const modelos = await this.vehicleModelRepository.find({
+          where: { id: In(updateProductDto.modelosCompatiblesIds) },
+        });
+        if (modelos.length !== updateProductDto.modelosCompatiblesIds.length) {
+          throw new NotFoundException('Algunos modelos de vehículo no fueron encontrados');
+        }
+        product.modelosCompatibles = modelos;
+      } else {
+        product.modelosCompatibles = [];
+      }
+    }
+
+    // Remover campos de relación del DTO antes de asignar
+    const { categoriaId, modelosCompatiblesIds, ...rest } = updateProductDto;
+    Object.assign(product, rest);
+    
     return this.productRepository.save(product);
   }
 

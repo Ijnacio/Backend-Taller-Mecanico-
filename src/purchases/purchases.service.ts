@@ -5,7 +5,7 @@ import { Purchase } from './entities/purchase.entity';
 import { PurchaseDetail } from './entities/purchase-detail.entity';
 import { Provider } from '../providers/entities/provider.entity';
 import { Product } from '../products/entities/product.entity';
-import { Vehicle } from '../vehicles/entities/vehicle.entity';
+import { VehicleModel } from '../vehicle-models/entities/vehicle-model.entity';
 
 @Injectable()
 export class PurchasesService {
@@ -77,7 +77,7 @@ export class PurchasesService {
 
         let product = await queryRunner.manager.findOne(Product, {
           where: { sku: item.sku },
-          relations: ['vehiculosCompatibles'],
+          relations: ['modelosCompatibles'],
         });
 
         if (!product) {
@@ -85,11 +85,11 @@ export class PurchasesService {
           product = new Product();
           product.sku = item.sku;
           product.nombre = item.nombre;
-          product.marca = item.marca;
-          product.calidad = item.calidad;
-          product.precio_venta = precioVenta; // Usamos el redondeado
+          product.marca = item.marca || '';
+          product.calidad = item.calidad || '';
+          product.precio_venta = precioVenta;
           product.stock_actual = 0;
-          product.vehiculosCompatibles = [];
+          product.modelosCompatibles = [];
         } else {
           // --- PRODUCTO EXISTENTE ---
           product.precio_venta = precioVenta;
@@ -97,18 +97,18 @@ export class PurchasesService {
           if (!product.calidad && item.calidad) product.calidad = item.calidad;
         }
 
-        // Merge de Vehículos
-        if (item.vehiculos_ids && item.vehiculos_ids.length > 0) {
-          const nuevosVehiculos = await queryRunner.manager.find(Vehicle, {
-            where: { id: In(item.vehiculos_ids) },
+        // Merge de Modelos Compatibles
+        if (item.modelos_compatibles_ids && item.modelos_compatibles_ids.length > 0) {
+          const nuevosModelos = await queryRunner.manager.find(VehicleModel, {
+            where: { id: In(item.modelos_compatibles_ids) },
           });
-          const vehiculosActuales = product.vehiculosCompatibles || [];
-          const vehiculosA_Agregar = nuevosVehiculos.filter(
-            (nv) => !vehiculosActuales.some((va) => va.id === nv.id),
+          const modelosActuales = product.modelosCompatibles || [];
+          const modelosA_Agregar = nuevosModelos.filter(
+            (nm) => !modelosActuales.some((ma) => ma.id === nm.id),
           );
-          product.vehiculosCompatibles = [
-            ...vehiculosActuales,
-            ...vehiculosA_Agregar,
+          product.modelosCompatibles = [
+            ...modelosActuales,
+            ...modelosA_Agregar,
           ];
         }
 
@@ -120,8 +120,8 @@ export class PurchasesService {
         const detail = new PurchaseDetail();
         detail.producto = product;
         detail.cantidad = item.cantidad;
-        detail.precio_costo_unitario = costoUnitario; // Guardamos Integer
-        detail.total_fila = totalFila; // Guardamos Integer
+        detail.precio_costo_unitario = costoUnitario;
+        detail.total_fila = totalFila;
         detail.compra = purchase;
 
         purchase.detalles.push(detail);

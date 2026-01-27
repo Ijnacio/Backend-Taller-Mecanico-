@@ -11,6 +11,7 @@ import { ClientsModule } from './clients/clients.module';
 import { ProvidersModule } from './providers/providers.module';
 import { PurchasesModule } from './purchases/purchases.module';
 import { VehiclesModule } from './vehicles/vehicles.module';
+import { VehicleModelsModule } from './vehicle-models/vehicle-models.module';
 import { WorkOrdersModule } from './work-orders/work-orders.module';
 import { CounterSalesModule } from './counter-sales/counter-sales.module';
 import { ReportsModule } from './reports/reports.module';
@@ -66,6 +67,7 @@ import { ReportsModule } from './reports/reports.module';
     ProvidersModule,
     PurchasesModule,
     VehiclesModule,
+    VehicleModelsModule,
     WorkOrdersModule,
     CounterSalesModule,
     ReportsModule,

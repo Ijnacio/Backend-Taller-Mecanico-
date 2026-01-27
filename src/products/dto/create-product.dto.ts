@@ -1,4 +1,4 @@
-import { IsString, IsInt, IsOptional, Min, IsUUID } from 'class-validator';
+import { IsString, IsInt, IsOptional, Min, IsUUID, IsArray } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateProductDto {
@@ -70,4 +70,14 @@ export class CreateProductDto {
   @IsUUID()
   @IsOptional()
   categoriaId?: string;
+
+  @ApiPropertyOptional({
+    example: ['uuid-modelo-1', 'uuid-modelo-2'],
+    description: 'IDs de modelos de vehículos compatibles con este producto',
+    type: [String],
+  })
+  @IsArray()
+  @IsUUID('4', { each: true })
+  @IsOptional()
+  modelosCompatiblesIds?: string[];
 }

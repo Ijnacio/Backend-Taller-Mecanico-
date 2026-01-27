@@ -1,6 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany } from 'typeorm';
-import { Product } from '../../products/entities/product.entity';
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
+/**
+ * Vehicle: Vehículos de CLIENTES (con patente única).
+ * Se usa en órdenes de trabajo para identificar el vehículo del cliente.
+ * 
+ * NO confundir con VehicleModel (modelos genéricos para compatibilidad de productos).
+ */
 @Entity()
 export class Vehicle {
   @PrimaryGeneratedColumn('uuid')
@@ -20,8 +25,4 @@ export class Vehicle {
 
   @Column({ nullable: true })
   kilometraje: number; // Último kilometraje registrado
-
-  // RELACIÓN MUCHOS A MUCHOS (INVERSA)
-  @ManyToMany(() => Product, (product) => product.vehiculosCompatibles)
-  productosCompatibles: Product[];
 }
