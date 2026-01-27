@@ -13,7 +13,7 @@ async function bootstrap() {
   });
 
   // 2. Prefijo Global (Tus rutas ahora serán /api/products, /api/auth, etc.)
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix('/api');
 
   // 3. Activación de Validaciones (DTOs)
   app.useGlobalPipes(
