@@ -6,11 +6,14 @@ export class Provider {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ unique: true })
+  @Column({ unique: true, nullable: true })
   nombre: string; // Ej: "Repuestos Don Gato"
 
   @Column({ nullable: true })
   telefono: string; // Teléfono de contacto
+
+  @Column({ unique: true, nullable: true })
+  rut: string; // N° Documento (RUT)
 
   @Column({ nullable: true })
   email: string; // Email de contacto
