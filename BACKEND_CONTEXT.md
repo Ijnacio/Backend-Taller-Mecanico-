@@ -174,6 +174,13 @@ Para salidas de inventario que NO son órdenes de taller.
 ### `Client`
 - `id`, `nombre`.
 - `rut` (unique, nullable), `email` (unique, nullable), `telefono`, `direccion`.
+- **NOTA**: El RUT y email se normalizan automáticamente al crear (sin puntos/guiones).
+
+#### Endpoints de Cliente:
+- `GET /clients` → Lista todos los clientes
+- `GET /clients/:id` → Cliente por ID (incluye órdenes)
+- `GET /clients/by-rut/:rut` → **NUEVO** Buscar por RUT (normaliza automáticamente, incluye órdenes)
+- `POST /clients` → Crear cliente (valida duplicados por RUT/email)
 
 ### `Vehicle` (Auto Cliente)
 - `id`, `patente` (unique).
