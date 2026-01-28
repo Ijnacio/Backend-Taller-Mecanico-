@@ -114,7 +114,7 @@ Para salidas de inventario que NO son órdenes de taller.
 ```json
 {
   "tipo_movimiento": "VENTA", // "VENTA" | "PERDIDA" | "USO_INTERNO"
-  "comprador": "Cliente de paso", // Opcional (Solo para VENTA)
+  "vendedor": "Juan Vendedor", // Opcional (Solo para VENTA)
   "comentario": "Compró líquido de frenos para llevar", // Opcional
   "items": [
     {

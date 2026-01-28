@@ -18,7 +18,7 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 @UseGuards(JwtAuthGuard)
 @Controller('counter-sales')
 export class CounterSalesController {
-  constructor(private readonly counterSalesService: CounterSalesService) {}
+  constructor(private readonly counterSalesService: CounterSalesService) { }
 
   @Post()
   @ApiOperation({
@@ -28,7 +28,7 @@ export class CounterSalesController {
 Registra salidas de inventario que NO son órdenes de trabajo.
 
 **Tipos de movimiento:**
-- **VENTA:** Cliente compra producto sin servicio de instalación. Requiere: comprador, precio_venta por item.
+- **VENTA:** Cliente compra producto sin servicio de instalación. Requiere: vendedor, precio_venta por item.
 - **PERDIDA:** Producto dañado, vencido o robado. Solo registra el costo perdido (NO suma a caja).
 - **USO_INTERNO:** Consumo del taller (ej: aceite para herramientas).
 
@@ -106,7 +106,7 @@ Registra salidas de inventario que NO son órdenes de trabajo.
           tipo: 'VENTA',
           total_venta: 56000,
           costo_perdida: 0,
-          comprador: 'Juan Pérez',
+          vendedor: 'Juan Vendedor',
           comentario: 'Cliente compró sin instalación',
           fecha_creacion: '2026-01-24T10:30:00.000Z',
           items: [],

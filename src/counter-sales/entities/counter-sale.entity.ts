@@ -33,7 +33,7 @@ export class CounterSale {
   comentario: string;
 
   @Column({ nullable: true })
-  comprador: string; // Nombre del cliente (solo VENTA)
+  vendedor: string; // Nombre del vendedor (quien hizo la venta)
 
   // AUDITORÍA
   @Column({ nullable: true })

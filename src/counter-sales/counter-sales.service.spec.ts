@@ -63,7 +63,7 @@ describe('CounterSalesService', () => {
       // Arrange: 2 unidades a $10.000 cada una
       const dto: CreateCounterSaleDto = {
         tipo_movimiento: MovementType.VENTA,
-        comprador: 'Cliente Test',
+        vendedor: 'Cliente Test',
         comentario: 'Venta de prueba',
         items: [{ sku: 'F-001', cantidad: 2, precio_venta: 10000 }],
       };
@@ -95,7 +95,7 @@ describe('CounterSalesService', () => {
     it('debe sumar totales de múltiples productos', async () => {
       const dto: CreateCounterSaleDto = {
         tipo_movimiento: MovementType.VENTA,
-        comprador: 'Cliente Test',
+        vendedor: 'Cliente Test',
         items: [
           { sku: 'F-001', cantidad: 2, precio_venta: 10000 }, // $20.000
           { sku: 'F-002', cantidad: 1, precio_venta: 15000 }, // $15.000
@@ -174,7 +174,7 @@ describe('CounterSalesService', () => {
     it('debe lanzar BadRequestException si stock es insuficiente', async () => {
       const dto: CreateCounterSaleDto = {
         tipo_movimiento: MovementType.VENTA,
-        comprador: 'Cliente Test',
+        vendedor: 'Cliente Test',
         items: [
           { sku: 'F-001', cantidad: 10, precio_venta: 5000 }, // Pide 10
         ],
@@ -198,7 +198,7 @@ describe('CounterSalesService', () => {
     it('debe descontar stock correctamente si hay suficiente', async () => {
       const dto: CreateCounterSaleDto = {
         tipo_movimiento: MovementType.VENTA,
-        comprador: 'Cliente Test',
+        vendedor: 'Cliente Test',
         items: [{ sku: 'F-001', cantidad: 3, precio_venta: 5000 }],
       };
 
@@ -242,7 +242,7 @@ describe('CounterSalesService', () => {
     it('debe requerir precio_venta para items de VENTA', async () => {
       const dto: CreateCounterSaleDto = {
         tipo_movimiento: MovementType.VENTA,
-        comprador: 'Cliente Test',
+        vendedor: 'Cliente Test',
         items: [
           { sku: 'F-001', cantidad: 1 }, // Sin precio_venta
         ],
@@ -267,7 +267,7 @@ describe('CounterSalesService', () => {
     it('debe rechazar lista vacía de items', async () => {
       const dto: CreateCounterSaleDto = {
         tipo_movimiento: MovementType.VENTA,
-        comprador: 'Cliente Test',
+        vendedor: 'Cliente Test',
         items: [], // Vacío
       };
 
@@ -278,7 +278,7 @@ describe('CounterSalesService', () => {
     it('debe lanzar error si producto no existe', async () => {
       const dto: CreateCounterSaleDto = {
         tipo_movimiento: MovementType.VENTA,
-        comprador: 'Cliente Test',
+        vendedor: 'Cliente Test',
         items: [{ sku: 'SKU-NO-EXISTE', cantidad: 1, precio_venta: 5000 }],
       };
 
@@ -332,7 +332,7 @@ describe('CounterSalesService', () => {
     it('debe hacer commit en operación exitosa', async () => {
       const dto: CreateCounterSaleDto = {
         tipo_movimiento: MovementType.VENTA,
-        comprador: 'Cliente OK',
+        vendedor: 'Cliente OK',
         items: [{ sku: 'F-001', cantidad: 1, precio_venta: 5000 }],
       };
 
@@ -357,7 +357,7 @@ describe('CounterSalesService', () => {
     it('debe hacer rollback en caso de error', async () => {
       const dto: CreateCounterSaleDto = {
         tipo_movimiento: MovementType.VENTA,
-        comprador: 'Cliente',
+        vendedor: 'Cliente',
         items: [{ sku: 'NO-EXISTE', cantidad: 1, precio_venta: 5000 }],
       };
 

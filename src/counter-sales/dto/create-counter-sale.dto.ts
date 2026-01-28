@@ -61,11 +61,11 @@ export class CreateCounterSaleDto {
   comentario?: string;
 
   @ApiPropertyOptional({
-    example: 'Juan Pérez (walk-in)',
+    example: 'Juan Vendedor',
     description:
-      'Nombre del comprador. OBLIGATORIO solo si tipo_movimiento = VENTA',
+      'Nombre del vendedor. OBLIGATORIO solo si tipo_movimiento = VENTA',
   })
   @IsString()
   @IsOptional()
-  comprador?: string;
+  vendedor?: string;
 }

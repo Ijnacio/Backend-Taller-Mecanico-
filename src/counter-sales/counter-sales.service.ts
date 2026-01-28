@@ -25,7 +25,7 @@ import { MovementType } from './enums/movement-type.enum';
 
 @Injectable()
 export class CounterSalesService {
-  constructor(private dataSource: DataSource) {}
+  constructor(private dataSource: DataSource) { }
 
   async create(
     createCounterSaleDto: CreateCounterSaleDto,
@@ -36,13 +36,13 @@ export class CounterSalesService {
     await queryRunner.startTransaction();
 
     try {
-      const { tipo_movimiento, items, comentario, comprador } =
+      const { tipo_movimiento, items, comentario, vendedor } =
         createCounterSaleDto;
 
       // Validaciones de negocio
-      if (tipo_movimiento === MovementType.VENTA && !comprador) {
+      if (tipo_movimiento === MovementType.VENTA && !vendedor) {
         throw new BadRequestException(
-          'Las ventas requieren el nombre del comprador',
+          'Las ventas requieren el nombre del vendedor',
         );
       }
 
@@ -54,7 +54,7 @@ export class CounterSalesService {
       const counterSale = new CounterSale();
       counterSale.tipo_movimiento = tipo_movimiento;
       counterSale.comentario = comentario!;
-      counterSale.comprador = comprador!;
+      counterSale.vendedor = vendedor!;
       counterSale.detalles = [];
 
       let totalVenta = 0;
