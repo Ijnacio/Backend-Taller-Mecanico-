@@ -7,10 +7,6 @@
     "node_modules",
     "test",
     "dist",
-    "**/*spec.ts",
-    "client",
-    "shared",
-    "vite.config.ts",
-    "script"
+    "**/*spec.ts"
   ]
 }
