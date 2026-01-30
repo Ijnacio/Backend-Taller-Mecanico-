@@ -47,6 +47,14 @@ async function seed() {
   if (!admin) {
     admin = await userRepo.save(adminData);
     console.log('✅ Usuario ADMIN creado');
+  } else {
+    // Si ya existe, actualizamos clave y nombre por si cambiaron
+    admin.password = adminData.password;
+    admin.nombre = adminData.nombre;
+    admin.role = adminData.role;
+    admin.isActive = true;
+    await userRepo.save(admin);
+    console.log('🔄 Usuario ADMIN actualizado');
   }
 
   // 2. CATEGORÍAS
