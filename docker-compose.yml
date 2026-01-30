@@ -6,6 +6,8 @@ services:
     image: postgres:15-alpine
     container_name: taller_db
     restart: always
+    ports:                  # <--- ESTO ES LO QUE TE FALTA
+      - "5432:5432"         # <--- ESTO ES CRUCIAL
     environment:
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -24,29 +26,27 @@ services:
       - "3000:3000"
     environment:
       - PORT=3000
-      - DB_HOST=db  # Importante: se llama igual que el servicio de arriba
+      - DB_HOST=db
       - DB_PORT=5432
       - DB_USERNAME=${DB_USERNAME}
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_DATABASE=${DB_DATABASE}
       - JWT_SECRET=${JWT_SECRET}
-      - FRONTEND_URL=${FRONTEND_URL}
       - DB_SYNCHRONIZE=true
     depends_on:
       - db
     networks:
       - taller_net
 
-  # 3. NocoDB (Panel Visual)
+  # 3. NocoDB (Panel Admin)
   nocodb:
     image: nocodb/nocodb:latest
-    container_name: taller_nocodb
+    container_name: nocodb
     restart: always
     ports:
-      - "8080:8080"
+      - "8081:8080"
     environment:
-      # Cadena de conexión mágica para que NocoDB vea tu Postgres
-      - NC_DB=pg://${DB_HOST}:5432?u=${DB_USERNAME}&p=${DB_PASSWORD}&d=${DB_DATABASE}
+      NC_DB: "pg://db:5432?u=${DB_USERNAME}&p=${DB_PASSWORD}&d=noco_meta"
     depends_on:
       - db
     networks:
@@ -54,6 +54,9 @@ services:
 
 volumes:
   postgres_data:
+  nc_data:
 
 networks:
   taller_net:
+
+
