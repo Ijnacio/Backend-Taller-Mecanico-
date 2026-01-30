@@ -42,7 +42,7 @@ async function seed() {
   const adminData = {
     rut: '111111111',
     password: await bcrypt.hash('admin123', 10),
-    nombre: 'María Aguilera',
+    nombre: 'Admin',
     role: UserRole.ADMIN,
     isActive: true,
   };
@@ -204,59 +204,59 @@ async function seed() {
       cli = await clientRepo.save(c);
     }
     clientesGuardados.push(cli);
-  
-  console.log(`✅ ${clientesGuardados.length} Clientes verificados/creados`);
 
-  // 7. VEHÍCULOS (asociados a clientes)
-  // Usamos los índices de clientesGuardados para asociar
-  // clientesGuardados[0] = Juan Pérez
-  const vehiculos = [
-    { patente: 'ABCD12', marca: 'Toyota', modelo: 'Yaris', anio: 2018, kilometraje: 45000, cliente: clientesGuardados[0] },
-    { patente: 'EFGH34', marca: 'Nissan', modelo: 'V16', anio: 2015, kilometraje: 120000, cliente: clientesGuardados[1] },
-    { patente: 'IJKL56', marca: 'Chevrolet', modelo: 'Spark', anio: 2017, kilometraje: 68000, cliente: clientesGuardados[2] },
-    { patente: 'MNOP78', marca: 'Hyundai', modelo: 'Accent', anio: 2019, kilometraje: 35000, cliente: clientesGuardados[3] },
-    { patente: 'QRST90', marca: 'Kia', modelo: 'Morning', anio: 2016, kilometraje: 92000, cliente: clientesGuardados[4] },
-    { patente: 'UVWX11', marca: 'Toyota', modelo: 'Corolla', anio: 2020, kilometraje: 28000, cliente: clientesGuardados[0] },
-  ];
+    console.log(`✅ ${clientesGuardados.length} Clientes verificados/creados`);
 
-  const vehiculosGuardados: Vehicle[] = [];
-  for (const v of vehiculos) {
-    let veh = await vehicleRepo.findOneBy({ patente: v.patente });
-    if (!veh) {
-      veh = await vehicleRepo.save(v);
+    // 7. VEHÍCULOS (asociados a clientes)
+    // Usamos los índices de clientesGuardados para asociar
+    // clientesGuardados[0] = Juan Pérez
+    const vehiculos = [
+      { patente: 'ABCD12', marca: 'Toyota', modelo: 'Yaris', anio: 2018, kilometraje: 45000, cliente: clientesGuardados[0] },
+      { patente: 'EFGH34', marca: 'Nissan', modelo: 'V16', anio: 2015, kilometraje: 120000, cliente: clientesGuardados[1] },
+      { patente: 'IJKL56', marca: 'Chevrolet', modelo: 'Spark', anio: 2017, kilometraje: 68000, cliente: clientesGuardados[2] },
+      { patente: 'MNOP78', marca: 'Hyundai', modelo: 'Accent', anio: 2019, kilometraje: 35000, cliente: clientesGuardados[3] },
+      { patente: 'QRST90', marca: 'Kia', modelo: 'Morning', anio: 2016, kilometraje: 92000, cliente: clientesGuardados[4] },
+      { patente: 'UVWX11', marca: 'Toyota', modelo: 'Corolla', anio: 2020, kilometraje: 28000, cliente: clientesGuardados[0] },
+    ];
+
+    const vehiculosGuardados: Vehicle[] = [];
+    for (const v of vehiculos) {
+      let veh = await vehicleRepo.findOneBy({ patente: v.patente });
+      if (!veh) {
+        veh = await vehicleRepo.save(v);
+      }
+      vehiculosGuardados.push(veh);
     }
-    vehiculosGuardados.push(veh);
+    console.log(`✅ ${vehiculosGuardados.length} Vehículos verificados/creados`);
+
+    // 8. COMPRAS (ejemplo, si tienes entidad Purchase)
+    // ...aquí iría la lógica para crear compras y aumentar stock de productos
+
+    // 9. ÓRDENES DE TRABAJO (ejemplo, si tienes entidad WorkOrder)
+    // ...aquí iría la lógica para crear órdenes, asociar cliente, vehículo, productos usados, usuario
+
+    // 10. VENTAS DE MOSTRADOR (ejemplo, si tienes entidad CounterSale)
+    // ...aquí iría la lógica para crear ventas de mostrador de distintos tipos
+
+    // 11. RESUMEN FINAL
+    console.log('\n========================================');
+    console.log('🏁 SEED DE DESARROLLO COMPLETADO');
+    console.log('========================================');
+    console.log('📊 Datos creados/verificados:');
+    console.log('   - 2 Usuarios (ADMIN + WORKER)');
+    console.log('   - 8 Categorías de frenos');
+    console.log('   - 10+ Modelos de vehículos');
+    console.log('   - Productos con modelos compatibles');
+    console.log('   - 4 Proveedores');
+    console.log('   - 5 Clientes');
+    console.log('   - 6 Vehículos');
+    console.log('========================================\n');
+
+    await dataSource.destroy();
   }
-  console.log(`✅ ${vehiculosGuardados.length} Vehículos verificados/creados`);
 
-  // 8. COMPRAS (ejemplo, si tienes entidad Purchase)
-  // ...aquí iría la lógica para crear compras y aumentar stock de productos
-
-  // 9. ÓRDENES DE TRABAJO (ejemplo, si tienes entidad WorkOrder)
-  // ...aquí iría la lógica para crear órdenes, asociar cliente, vehículo, productos usados, usuario
-
-  // 10. VENTAS DE MOSTRADOR (ejemplo, si tienes entidad CounterSale)
-  // ...aquí iría la lógica para crear ventas de mostrador de distintos tipos
-
-  // 11. RESUMEN FINAL
-  console.log('\n========================================');
-  console.log('🏁 SEED DE DESARROLLO COMPLETADO');
-  console.log('========================================');
-  console.log('📊 Datos creados/verificados:');
-  console.log('   - 2 Usuarios (ADMIN + WORKER)');
-  console.log('   - 8 Categorías de frenos');
-  console.log('   - 10+ Modelos de vehículos');
-  console.log('   - Productos con modelos compatibles');
-  console.log('   - 4 Proveedores');
-  console.log('   - 5 Clientes');
-  console.log('   - 6 Vehículos');
-  console.log('========================================\n');
-
-  await dataSource.destroy();
-}
-
-seed().catch((e) => {
-  console.error('❌ Error en seed:', e);
-  process.exit(1);
-});
+  seed().catch((e) => {
+    console.error('❌ Error en seed:', e);
+    process.exit(1);
+  });
 }
