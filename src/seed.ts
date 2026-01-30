@@ -204,7 +204,7 @@ async function seed() {
       cli = await clientRepo.save(c);
     }
     clientesGuardados.push(cli);
-  }
+  
   console.log(`✅ ${clientesGuardados.length} Clientes verificados/creados`);
 
   // 7. VEHÍCULOS (asociados a clientes)
@@ -259,3 +259,4 @@ seed().catch((e) => {
   console.error('❌ Error en seed:', e);
   process.exit(1);
 });
+}
