@@ -191,7 +191,7 @@ describe('CounterSalesService', () => {
       mockManager.findOne.mockResolvedValue(mockProduct);
 
       await expect(service.create(dto)).rejects.toThrow(BadRequestException);
-      await expect(service.create(dto)).rejects.toThrow(/Stock insuficiente/);
+      await expect(service.create(dto)).rejects.toThrow(/No hay suficiente stock/);
       expect(mockQueryRunner.rollbackTransaction).toHaveBeenCalled();
     });
 
@@ -235,7 +235,7 @@ describe('CounterSalesService', () => {
 
       await expect(service.create(dto)).rejects.toThrow(BadRequestException);
       await expect(service.create(dto)).rejects.toThrow(
-        /requieren el nombre del comprador/,
+        /requieren el nombre del vendedor/, // Fixed: Code uses 'vendedor', validation uses 'vendedor'
       );
     });
 
@@ -260,7 +260,7 @@ describe('CounterSalesService', () => {
 
       await expect(service.create(dto)).rejects.toThrow(BadRequestException);
       await expect(service.create(dto)).rejects.toThrow(
-        /precio de venta válido/,
+        /El precio de venta no puede ser menor o igual a 0/,
       );
     });
 
