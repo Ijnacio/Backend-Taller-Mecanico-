@@ -57,6 +57,27 @@ async function seed() {
     console.log('🔄 Usuario ADMIN actualizado');
   }
 
+  // 1.5. USUARIO WORKER
+  const workerData = {
+    rut: '99999999',
+    password: await bcrypt.hash('taller123', 10),
+    nombre: 'Pedro Mecánico',
+    role: UserRole.WORKER,
+    isActive: true,
+  };
+  let worker = await userRepo.findOneBy({ rut: workerData.rut });
+  if (!worker) {
+    worker = await userRepo.save(workerData);
+    console.log('✅ Usuario WORKER creado');
+  } else {
+    worker.password = workerData.password;
+    worker.nombre = workerData.nombre;
+    worker.role = workerData.role;
+    worker.isActive = true;
+    await userRepo.save(worker);
+    console.log('🔄 Usuario WORKER actualizado');
+  }
+
   // 2. CATEGORÍAS
   const categorias = [
     { nombre: 'Pastillas de Freno', descripcion: 'Pastillas delanteras y traseras' },
