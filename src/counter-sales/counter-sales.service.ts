@@ -66,24 +66,32 @@ export class CounterSalesService {
           where: { sku: item.sku },
         });
 
+        // Validación de Existencia
         if (!product) {
           throw new BadRequestException(
             `El producto con SKU ${item.sku} no existe en inventario.`,
           );
         }
 
-        // Validar stock suficiente
+        // Validación de Stock
         if (product.stock_actual < item.cantidad) {
           throw new BadRequestException(
-            `Stock insuficiente para ${product.nombre}. Disponible: ${product.stock_actual}, Solicitado: ${item.cantidad}`,
+            `No hay suficiente stock para el producto ${product.nombre} (Disponible: ${product.stock_actual})`,
           );
         }
 
-        // Validación específica para VENTA
+        // Validación de Precios y Costos
         if (tipo_movimiento === MovementType.VENTA) {
           if (!item.precio_venta || item.precio_venta <= 0) {
             throw new BadRequestException(
-              `El producto ${product.nombre} requiere un precio de venta válido`,
+              `El precio de venta no puede ser menor o igual a 0 para el producto ${product.nombre}`,
+            );
+          }
+        } else if (tipo_movimiento === MovementType.USO_INTERNO) {
+          // Validamos que el producto tenga un "costo" (precio_venta en este caso) válido
+          if (!product.precio_venta || product.precio_venta <= 0) {
+            throw new BadRequestException(
+              `El producto ${product.nombre} no tiene un costo válido registrado en BD, no se puede usar para USO_INTERNO`,
             );
           }
         }
