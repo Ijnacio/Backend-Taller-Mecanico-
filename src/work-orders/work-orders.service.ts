@@ -17,6 +17,7 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { CreateWorkOrderDto } from './dto/create-work-order.dto';
+import { UpdateWorkOrderDto } from './dto/update-work-order.dto';
 import { WorkOrder } from './entities/work-order.entity';
 import { WorkOrderDetail } from './entities/work-order-detail.entity';
 import { Client } from '../clients/entities/client.entity';
@@ -26,7 +27,7 @@ import { WORK_ORDER_SERVICES } from './constants/services.constant';
 
 @Injectable()
 export class WorkOrdersService {
-  constructor(private dataSource: DataSource) {}
+  constructor(private dataSource: DataSource) { }
 
   async create(createWorkOrderDto: CreateWorkOrderDto, createdByName?: string) {
     const queryRunner = this.dataSource.createQueryRunner();
@@ -216,5 +217,29 @@ export class WorkOrdersService {
    */
   getServicesList(): string[] {
     return [...WORK_ORDER_SERVICES]; // Retornamos una copia para evitar mutaciones
+  }
+
+  async findOne(id: string) {
+    return await this.dataSource.manager.findOne(WorkOrder, {
+      where: { id },
+      relations: ['cliente', 'detalles', 'detalles.producto'],
+    });
+  }
+
+  async update(id: string, updateWorkOrderDto: UpdateWorkOrderDto) {
+    const order = await this.findOne(id);
+    if (!order) {
+      throw new BadRequestException(`Orden de trabajo con ID ${id} no encontrada`);
+    }
+
+    // Actualizar campos simples si vienen
+    if (updateWorkOrderDto.numero_orden_papel) order.numero_orden_papel = updateWorkOrderDto.numero_orden_papel;
+    if (updateWorkOrderDto.realizado_por) order.realizado_por = updateWorkOrderDto.realizado_por;
+    if (updateWorkOrderDto.revisado_por) order.revisado_por = updateWorkOrderDto.revisado_por;
+
+    // NOTA: No implementamos la actualización compleja de items/stock aquí para mantenerlo simple por ahora
+    // Si se requiere editar items, se debería hacer un mecanismo de anulación/re-creación o lógica compleja de inventario.
+
+    return await this.dataSource.manager.save(order);
   }
 }

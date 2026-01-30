@@ -1,13 +1,15 @@
-import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Patch, Param } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
   ApiBody,
+  ApiParam,
 } from '@nestjs/swagger';
 import { WorkOrdersService } from './work-orders.service';
 import { CreateWorkOrderDto } from './dto/create-work-order.dto';
+import { UpdateWorkOrderDto } from './dto/update-work-order.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
@@ -16,7 +18,7 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 @UseGuards(JwtAuthGuard)
 @Controller('work-orders')
 export class WorkOrdersController {
-  constructor(private readonly workOrdersService: WorkOrdersService) {}
+  constructor(private readonly workOrdersService: WorkOrdersService) { }
 
   @Get('services-catalog')
   @ApiOperation({
@@ -145,5 +147,27 @@ Crea una nueva orden de trabajo con cliente, vehículo y servicios realizados.
   })
   findAll() {
     return this.workOrdersService.findAll();
+  }
+
+  @Patch(':id')
+  @ApiOperation({
+    summary: 'Actualizar una orden de trabajo',
+    description: 'Permite actualizar campos de la cabecera como el número de orden papel, o quien realizó/revisó el trabajo.',
+  })
+  @ApiParam({ name: 'id', description: 'UUID de la orden' })
+  @ApiBody({ type: UpdateWorkOrderDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Orden actualizada exitosamente',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Orden no encontrada',
+  })
+  update(
+    @Param('id') id: string,
+    @Body() updateWorkOrderDto: UpdateWorkOrderDto,
+  ) {
+    return this.workOrdersService.update(id, updateWorkOrderDto);
   }
 }

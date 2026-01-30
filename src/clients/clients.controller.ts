@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Body, UseGuards, Param, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Param, NotFoundException, Patch } from '@nestjs/common';
 import { ClientsService } from './clients.service';
 import { CreateClientDto } from './dto/create-client.dto';
+import { UpdateClientDto } from './dto/update-client.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import {
   ApiBearerAuth,
@@ -87,6 +88,23 @@ export class ClientsController {
       throw new NotFoundException(`No se encontró cliente con ID ${id}`);
     }
     return client;
+  }
+
+  /**
+   * PATCH /api/clients/:id
+   * Actualizar cliente
+   */
+  @Patch(':id')
+  @ApiOperation({ summary: 'Actualizar datos de un cliente' })
+  @ApiParam({ name: 'id', description: 'UUID del cliente' })
+  @ApiResponse({ status: 200, description: 'Cliente actualizado exitosamente' })
+  @ApiResponse({ status: 404, description: 'Cliente no encontrado' })
+  @ApiResponse({ status: 409, description: 'Conflicto: RUT o Email ya existe en otro cliente' })
+  async update(
+    @Param('id') id: string,
+    @Body() updateClientDto: UpdateClientDto,
+  ) {
+    return this.clientsService.update(id, updateClientDto);
   }
 }
 

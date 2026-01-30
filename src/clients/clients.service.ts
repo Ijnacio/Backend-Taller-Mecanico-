@@ -1,7 +1,8 @@
-import { Injectable, ConflictException } from '@nestjs/common';
-import { DataSource } from 'typeorm';
+import { Injectable, ConflictException, NotFoundException } from '@nestjs/common'; import { DataSource } from 'typeorm';
 import { Client } from './entities/client.entity';
 import { CreateClientDto } from './dto/create-client.dto';
+import { UpdateClientDto } from './dto/update-client.dto';
+
 
 @Injectable()
 export class ClientsService {
@@ -82,5 +83,50 @@ export class ClientsService {
       where: { id },
       relations: ['ordenes'],
     });
+  }
+  /**
+ * Actualiza un cliente
+ */
+  async update(id: string, updateClientDto: UpdateClientDto): Promise<Client> {
+    const client = await this.findOne(id);
+    if (!client) {
+      throw new NotFoundException(`Cliente con ID ${id} no encontrado`); // Esto devuelve Error 404
+    }
+
+    // Normalizar y validar RUT si viene
+    if (updateClientDto.rut) {
+      const rutNormalizado = this.normalizeRut(updateClientDto.rut);
+      if (rutNormalizado !== client.rut) {
+        // Verificar si ya existe OTRO cliente con ese RUT
+        const existingByRut = await this.dataSource.manager.findOne(Client, {
+          where: { rut: rutNormalizado },
+        });
+        if (existingByRut && existingByRut.id !== id) {
+          throw new ConflictException(`Ya existe otro cliente con RUT ${updateClientDto.rut}`);
+        }
+        client.rut = rutNormalizado;
+      }
+    }
+
+    // Normalizar y validar Email si viene
+    if (updateClientDto.email) {
+      const emailNormalizado = this.normalizeEmail(updateClientDto.email);
+      if (emailNormalizado !== client.email) {
+        // Verificar si ya existe OTRO cliente con ese email
+        const existingByEmail = await this.dataSource.manager.findOne(Client, {
+          where: { email: emailNormalizado },
+        });
+        if (existingByEmail && existingByEmail.id !== id) {
+          throw new ConflictException(`Ya existe otro cliente con email ${updateClientDto.email}`);
+        }
+        client.email = emailNormalizado;
+      }
+    }
+
+    if (updateClientDto.nombre) client.nombre = updateClientDto.nombre;
+    if (updateClientDto.telefono) client.telefono = updateClientDto.telefono;
+    if (updateClientDto.direccion) client.direccion = updateClientDto.direccion;
+
+    return await this.dataSource.manager.save(client);
   }
 }
