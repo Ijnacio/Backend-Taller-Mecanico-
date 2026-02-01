@@ -54,8 +54,15 @@ export class ProductsService {
     return this.productRepository.save(product);
   }
 
-  async findAll(): Promise<Product[]> {
+  async findAll(categoriaId?: string): Promise<Product[]> {
+    const whereClause: any = {};
+    
+    if (categoriaId) {
+      whereClause.categoria = { id: categoriaId };
+    }
+
     return this.productRepository.find({
+      where: whereClause,
       relations: ['categoria', 'modelosCompatibles'],
     });
   }

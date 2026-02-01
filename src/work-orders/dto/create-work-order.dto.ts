@@ -54,6 +54,17 @@ class WorkOrderItemDto {
   @Min(1, { message: 'La cantidad debe ser al menos 1' })
   @IsOptional()
   cantidad_producto?: number;
+
+  // Alias para compatibilidad con frontend
+  @ApiPropertyOptional({
+    example: 1,
+    description: 'Alias de cantidad_producto para compatibilidad',
+    minimum: 1,
+  })
+  @IsInt()
+  @Min(1, { message: 'La cantidad debe ser al menos 1' })
+  @IsOptional()
+  cantidad?: number;
 }
 
 class ClientDto {

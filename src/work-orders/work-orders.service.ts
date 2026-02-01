@@ -150,11 +150,12 @@ export class WorkOrdersService {
             );
           }
 
-          const cantidad = item.cantidad_producto || 1;
+          // Soportar tanto cantidad como cantidad_producto
+          const cantidad = item.cantidad_producto || item.cantidad || 1;
 
           if (product.stock_actual < cantidad) {
             throw new BadRequestException(
-              `Stock insuficiente para ${product.nombre}. Quedan ${product.stock_actual}.`,
+              `Stock insuficiente para el producto "${product.nombre}". Disponible: ${product.stock_actual} unidades.`,
             );
           }
 

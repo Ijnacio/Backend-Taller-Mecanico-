@@ -6,8 +6,9 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -27,9 +28,10 @@ export class ProductsController {
 
   @Get()
   @ApiOperation({ summary: 'Obtener todos los productos (excluye eliminados)' })
+  @ApiQuery({ name: 'categoriaId', required: false, description: 'Filtrar por ID de categoría' })
   @ApiResponse({ status: 200, description: 'Lista de productos activos' })
-  findAll() {
-    return this.productsService.findAll();
+  findAll(@Query('categoriaId') categoriaId?: string) {
+    return this.productsService.findAll(categoriaId);
   }
 
   @Get('deleted')
