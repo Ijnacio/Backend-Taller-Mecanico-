@@ -19,6 +19,9 @@ export class Purchase {
   @Column({ nullable: true })
   numero_factura: string; // El número del papel
 
+  @Column({ type: 'varchar', default: 'FACTURA' })
+  tipo_documento: 'FACTURA' | 'INFORMAL';
+
   @Index()
   @CreateDateColumn()
   fecha: Date;

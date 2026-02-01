@@ -45,6 +45,7 @@ export class PurchasesService {
       // 2. PREPARAR CABECERA
       const purchase = new Purchase();
       purchase.numero_factura = createPurchaseDto.numero_documento || 'S/N';
+      purchase.tipo_documento = createPurchaseDto.tipo_documento || 'FACTURA';
       purchase.proveedor = provider;
       purchase.detalles = [];
 
@@ -65,14 +66,9 @@ export class PurchasesService {
           throw new BadRequestException(
             `El costo del SKU ${item.sku} no puede ser negativo`,
           );
-        if (item.precio_venta_sugerido < 0)
-          throw new BadRequestException(
-            `El precio sugerido del SKU ${item.sku} no puede ser negativo`,
-          );
 
-        // FIX AUDITORIA FINAL: Redondeo preventivo (Integers)
+        // Redondeo preventivo (Integers)
         const costoUnitario = Math.round(item.precio_costo);
-        const precioVenta = Math.round(item.precio_venta_sugerido);
         const totalFila = Math.round(item.cantidad * costoUnitario);
 
         let product = await queryRunner.manager.findOne(Product, {
@@ -82,17 +78,18 @@ export class PurchasesService {
 
         if (!product) {
           // --- PRODUCTO NUEVO ---
+          // El precio_venta se define después manualmente, no en la compra
           product = new Product();
           product.sku = item.sku;
           product.nombre = item.nombre;
           product.marca = item.marca || '';
           product.calidad = item.calidad || '';
-          product.precio_venta = precioVenta;
+          product.precio_venta = 0; // Se define después al editar el producto
           product.stock_actual = 0;
           product.modelosCompatibles = [];
         } else {
           // --- PRODUCTO EXISTENTE ---
-          product.precio_venta = precioVenta;
+          // ✅ NO modificar precio_venta, solo datos faltantes
           if (!product.marca && item.marca) product.marca = item.marca;
           if (!product.calidad && item.calidad) product.calidad = item.calidad;
         }
@@ -154,6 +151,7 @@ export class PurchasesService {
       const result = {
         id: purchase.id,
         numero_factura: purchase.numero_factura,
+        tipo_documento: purchase.tipo_documento,
         fecha: purchase.fecha,
         monto_neto: purchase.monto_neto,
         monto_iva: purchase.monto_iva,

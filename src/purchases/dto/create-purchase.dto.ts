@@ -45,10 +45,6 @@ class PurchaseItemDto {
   @ApiProperty({ example: 15000, description: 'Precio de costo unitario en CLP' })
   @IsInt()
   precio_costo: number;
-
-  @ApiProperty({ example: 28000, description: 'Precio de venta sugerido en CLP' })
-  @IsInt()
-  precio_venta_sugerido: number;
 }
 
 export class CreatePurchaseDto {
