@@ -91,6 +91,7 @@ export class WorkOrdersService {
       const patenteNormalizada = vehiculoDto.patente.toUpperCase().trim();
       let vehicle = await queryRunner.manager.findOne(Vehicle, {
         where: { patente: patenteNormalizada },
+        relations: ['cliente'],
       });
 
       if (!vehicle) {
@@ -104,6 +105,12 @@ export class WorkOrdersService {
       if (vehiculoDto.kilometraje) {
         vehicle.kilometraje = vehiculoDto.kilometraje;
       }
+
+      // ASOCIAR VEHÍCULO AL CLIENTE (si no tiene dueño o es diferente)
+      if (!vehicle.cliente || vehicle.cliente.id !== client.id) {
+        vehicle.cliente = client;
+      }
+
       await queryRunner.manager.save(vehicle);
 
       // ---------------------------------------------------------

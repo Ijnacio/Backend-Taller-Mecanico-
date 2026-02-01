@@ -6,8 +6,9 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { VehiclesService } from './vehicles.service';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
 import { UpdateVehicleDto } from './dto/update-vehicle.dto';
@@ -26,10 +27,22 @@ export class VehiclesController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Obtener todos los vehículos' })
+  @ApiOperation({ summary: 'Obtener todos los vehículos (opcionalmente filtrar por cliente)' })
+  @ApiQuery({ name: 'clienteId', required: false, description: 'Filtrar vehículos por ID del cliente' })
   @ApiResponse({ status: 200, description: 'Lista de vehículos' })
-  findAll() {
+  findAll(@Query('clienteId') clienteId?: string) {
+    if (clienteId) {
+      return this.vehiclesService.findByClienteId(clienteId);
+    }
     return this.vehiclesService.findAll();
+  }
+
+  @Get('patente/:patente')
+  @ApiOperation({ summary: 'Buscar vehículo por patente' })
+  @ApiResponse({ status: 200, description: 'Vehículo encontrado' })
+  @ApiResponse({ status: 404, description: 'Vehículo no encontrado' })
+  findByPatente(@Param('patente') patente: string) {
+    return this.vehiclesService.findByPatente(patente);
   }
 
   @Get(':id')

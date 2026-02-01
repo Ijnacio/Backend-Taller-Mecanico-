@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, Index } from 'typeorm';
+import { Client } from '../../clients/entities/client.entity';
 
 /**
  * Vehicle: Vehículos de CLIENTES (con patente única).
@@ -25,4 +26,9 @@ export class Vehicle {
 
   @Column({ nullable: true })
   kilometraje: number; // Último kilometraje registrado
+
+  // === RELACIÓN CON CLIENTE ===
+  @Index()
+  @ManyToOne(() => Client, (client) => client.vehiculos, { nullable: true })
+  cliente: Client; // El dueño del vehículo
 }

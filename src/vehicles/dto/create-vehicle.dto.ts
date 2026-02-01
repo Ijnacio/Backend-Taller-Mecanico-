@@ -1,4 +1,4 @@
-import { IsString, IsInt, IsOptional, Min } from 'class-validator';
+import { IsString, IsInt, IsOptional, Min, IsUUID } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateVehicleDto {
@@ -40,4 +40,12 @@ export class CreateVehicleDto {
   @Min(0)
   @IsOptional()
   kilometraje?: number;
+
+  @ApiPropertyOptional({
+    example: 'uuid-cliente',
+    description: 'ID del cliente dueño del vehículo',
+  })
+  @IsUUID()
+  @IsOptional()
+  clienteId?: string;
 }

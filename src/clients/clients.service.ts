@@ -59,7 +59,9 @@ export class ClientsService {
   }
 
   async findAll(): Promise<Client[]> {
-    return await this.dataSource.manager.find(Client);
+    return await this.dataSource.manager.find(Client, {
+      relations: ['ordenes', 'vehiculos'],
+    });
   }
 
   /**
@@ -71,7 +73,7 @@ export class ClientsService {
     const rutNormalizado = this.normalizeRut(rut);
     return await this.dataSource.manager.findOne(Client, {
       where: { rut: rutNormalizado },
-      relations: ['ordenes'],
+      relations: ['ordenes', 'vehiculos'],
     });
   }
 
@@ -81,7 +83,7 @@ export class ClientsService {
   async findOne(id: string): Promise<Client | null> {
     return await this.dataSource.manager.findOne(Client, {
       where: { id },
-      relations: ['ordenes'],
+      relations: ['ordenes', 'vehiculos'],
     });
   }
   /**
