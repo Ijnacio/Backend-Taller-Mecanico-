@@ -26,10 +26,17 @@ export class ProductsController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Obtener todos los productos' })
-  @ApiResponse({ status: 200, description: 'Lista de productos' })
+  @ApiOperation({ summary: 'Obtener todos los productos (excluye eliminados)' })
+  @ApiResponse({ status: 200, description: 'Lista de productos activos' })
   findAll() {
     return this.productsService.findAll();
+  }
+
+  @Get('deleted')
+  @ApiOperation({ summary: 'Obtener productos eliminados (soft delete)' })
+  @ApiResponse({ status: 200, description: 'Lista de productos eliminados' })
+  findDeleted() {
+    return this.productsService.findDeleted();
   }
 
   @Get(':id')
@@ -48,9 +55,18 @@ export class ProductsController {
     return this.productsService.update(id, updateProductDto);
   }
 
+  @Patch(':id/restore')
+  @ApiOperation({ summary: 'Restaurar un producto eliminado' })
+  @ApiResponse({ status: 200, description: 'Producto restaurado exitosamente' })
+  @ApiResponse({ status: 404, description: 'Producto no encontrado' })
+  @ApiResponse({ status: 409, description: 'El producto no está eliminado' })
+  restore(@Param('id') id: string) {
+    return this.productsService.restore(id);
+  }
+
   @Delete(':id')
-  @ApiOperation({ summary: 'Eliminar un producto' })
-  @ApiResponse({ status: 200, description: 'Producto eliminado' })
+  @ApiOperation({ summary: 'Eliminar un producto (soft delete - se puede restaurar)' })
+  @ApiResponse({ status: 200, description: 'Producto eliminado (soft delete)' })
   @ApiResponse({ status: 404, description: 'Producto no encontrado' })
   remove(@Param('id') id: string) {
     return this.productsService.remove(id);

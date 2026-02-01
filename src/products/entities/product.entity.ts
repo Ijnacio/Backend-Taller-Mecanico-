@@ -5,6 +5,7 @@ import {
   ManyToOne,
   ManyToMany,
   JoinTable,
+  DeleteDateColumn,
 } from 'typeorm';
 import { Category } from '../../categories/entities/category.entity';
 import { VehicleModel } from '../../vehicle-models/entities/vehicle-model.entity';
@@ -34,6 +35,10 @@ export class Product {
 
   @Column('int', { default: 5 })
   stock_minimo: number; // Para la alerta
+
+  // SOFT DELETE: TypeORM filtra automáticamente los registros con deletedAt != null
+  @DeleteDateColumn()
+  deletedAt: Date;
 
   // Modelos de vehículos compatibles (marca + modelo + año, sin patente)
   @ManyToMany(() => VehicleModel, (vehicleModel) => vehicleModel.productos, {

@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In } from 'typeorm';
+import { Repository, In, Not, IsNull } from 'typeorm';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { Product } from './entities/product.entity';
@@ -107,8 +107,49 @@ export class ProductsService {
     return this.productRepository.save(product);
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: string): Promise<{ message: string; id: string }> {
     const product = await this.findOne(id);
-    await this.productRepository.remove(product);
+    
+    // Soft delete: marca deletedAt con la fecha actual
+    // TypeORM filtrará automáticamente este producto en consultas find()
+    await this.productRepository.softDelete(id);
+    
+    return {
+      message: `Producto ${product.nombre} (${product.sku}) eliminado correctamente`,
+      id: id,
+    };
+  }
+
+  /**
+   * Restaurar un producto eliminado (soft delete)
+   */
+  async restore(id: string): Promise<Product> {
+    // Buscar incluyendo los eliminados
+    const product = await this.productRepository.findOne({
+      where: { id },
+      withDeleted: true,
+    });
+
+    if (!product) {
+      throw new NotFoundException(`Producto con ID ${id} no encontrado`);
+    }
+
+    if (!product.deletedAt) {
+      throw new ConflictException(`El producto ${product.sku} no está eliminado`);
+    }
+
+    await this.productRepository.restore(id);
+    return this.findOne(id);
+  }
+
+  /**
+   * Listar productos eliminados (para admin)
+   */
+  async findDeleted(): Promise<Product[]> {
+    return this.productRepository.find({
+      withDeleted: true,
+      where: { deletedAt: Not(IsNull()) },
+      relations: ['categoria', 'modelosCompatibles'],
+    });
   }
 }

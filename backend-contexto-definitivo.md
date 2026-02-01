@@ -114,13 +114,15 @@ Authorization: Bearer <access_token>
 | DELETE | /api/users/:id    | Desactivar usuario       |
 
 ### 📦 Products
-| Método | Ruta               | Descripción                    |
-|--------|--------------------|--------------------------------|
-| GET    | /api/products      | Listar todos los productos     |
-| GET    | /api/products/:id  | Obtener producto por ID        |
-| POST   | /api/products      | Crear producto                 |
-| PATCH  | /api/products/:id  | Actualizar producto            |
-| DELETE | /api/products/:id  | Eliminar producto              |
+| Método | Ruta                    | Descripción                              |
+|--------|-------------------------|------------------------------------------|
+| GET    | /api/products           | Listar productos activos                 |
+| GET    | /api/products/deleted   | Listar productos eliminados (soft)       |
+| GET    | /api/products/:id       | Obtener producto por ID                  |
+| POST   | /api/products           | Crear producto                           |
+| PATCH  | /api/products/:id       | Actualizar producto                      |
+| PATCH  | /api/products/:id/restore | Restaurar producto eliminado           |
+| DELETE | /api/products/:id       | Eliminar producto (soft delete)          |
 
 ### 🏷️ Categories
 | Método | Ruta                 | Descripción              |
