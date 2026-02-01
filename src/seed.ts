@@ -293,6 +293,7 @@ async function seed() {
   ) => {
     const purchase = new Purchase();
     purchase.numero_factura = numeroFactura;
+    purchase.tipo_documento = tipoDoc; // ✅ Guardar tipo de documento
     purchase.proveedor = proveedor;
     purchase.createdByName = 'María Aguilera';
     purchase.detalles = [];
