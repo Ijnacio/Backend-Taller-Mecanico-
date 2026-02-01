@@ -14,7 +14,10 @@ export class WorkOrderDetail {
   descripcion: string; // Lo que el mecánico escribió a mano
 
   @Column('int')
-  precio: number; // Lo que se cobró por este servicio
+  precio: number; // Precio UNITARIO del servicio
+
+  @Column({ type: 'int', default: 1 })
+  cantidad: number; // Cantidad de productos usados
 
   // === RELACIONES ===
   @ManyToOne(() => WorkOrder, (order) => order.detalles, {

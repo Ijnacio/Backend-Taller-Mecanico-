@@ -133,10 +133,14 @@ export class WorkOrdersService {
       // 4. PROCESAMIENTO DE ITEMS Y STOCK
       // ---------------------------------------------------------
       for (const item of items) {
+        // Soportar tanto cantidad como cantidad_producto
+        const cantidadItem = item.cantidad_producto || item.cantidad || 1;
+
         const detail = new WorkOrderDetail();
         detail.servicio_nombre = item.servicio_nombre;
         detail.descripcion = item.descripcion || '';
-        detail.precio = item.precio;
+        detail.precio = item.precio; // Precio UNITARIO
+        detail.cantidad = cantidadItem; // Guardar cantidad
 
         // LÓGICA DE INVENTARIO
         if (item.product_sku) {
@@ -150,17 +154,14 @@ export class WorkOrdersService {
             );
           }
 
-          // Soportar tanto cantidad como cantidad_producto
-          const cantidad = item.cantidad_producto || item.cantidad || 1;
-
-          if (product.stock_actual < cantidad) {
+          if (product.stock_actual < cantidadItem) {
             throw new BadRequestException(
               `Stock insuficiente para el producto "${product.nombre}". Disponible: ${product.stock_actual} unidades.`,
             );
           }
 
           // Descontar stock
-          product.stock_actual -= cantidad;
+          product.stock_actual -= cantidadItem;
           await queryRunner.manager.save(product);
 
           // Guardar referencia en el detalle
@@ -169,7 +170,8 @@ export class WorkOrdersService {
 
         detail.workOrder = order;
         order.detalles.push(detail);
-        totalOrden += item.precio;
+        // Total = precio unitario * cantidad
+        totalOrden += item.precio * cantidadItem;
       }
 
       order.total_cobrado = totalOrden;
