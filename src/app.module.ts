@@ -27,32 +27,32 @@ import { ReportsModule } from './reports/reports.module';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => {
-        const dbType = configService.get<string>('DB_TYPE') || 'sqlite';
+        // Obtenemos el tipo, si no existe en el .env, no asumimos nada
+        const dbType = configService.get<string>('DB_TYPE');
 
-        // Configuración base común
         const baseConfig = {
           autoLoadEntities: true,
           synchronize: configService.get<string>('DB_SYNCHRONIZE') === 'true',
         };
 
-        // SQLite (desarrollo/tests)
-        if (dbType === 'sqlite') {
+        // Si es Postgres (o si dbType NO está definido, forzamos Postgres en el servidor)
+        if (dbType === 'postgres' || !dbType) {
           return {
             ...baseConfig,
-            type: 'sqlite' as const,
-            database: configService.get<string>('DB_DATABASE') || './taller.db',
+            type: 'postgres' as const,
+            host: configService.get<string>('DB_HOST') || 'localhost',
+            port: parseInt(configService.get<string>('DB_PORT') || '5432'),
+            username: configService.get<string>('DB_USERNAME') || 'postgres',
+            password: configService.get<string>('DB_PASSWORD'),
+            database: configService.get<string>('DB_DATABASE') || 'taller_mecanico',
           };
         }
 
-        // PostgreSQL (producción)
+        // SQLite solo si se especifica explícitamente
         return {
           ...baseConfig,
-          type: 'postgres' as const,
-          host: configService.get<string>('DB_HOST') || 'localhost',
-          port: parseInt(configService.get<string>('DB_PORT') || '5432'),
-          username: configService.get<string>('DB_USERNAME') || 'postgres',
-          password: configService.get<string>('DB_PASSWORD'),
-          database: configService.get<string>('DB_DATABASE') || 'taller_mecanico',
+          type: 'sqlite' as const,
+          database: configService.get<string>('DB_DATABASE') || './taller.db',
         };
       },
       inject: [ConfigService],
