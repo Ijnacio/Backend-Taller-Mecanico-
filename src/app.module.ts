@@ -23,39 +23,23 @@ import { ReportsModule } from './reports/reports.module';
       isGlobal: true,
     }),
 
-    // 2. Base de Datos - Lee del .env (SQLite o PostgreSQL)
+    // 2. Base de Datos - Configuración exclusiva para PostgreSQL
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => {
-        // Obtenemos el tipo, si no existe en el .env, no asumimos nada
-        const dbType = configService.get<string>('DB_TYPE');
-
-        const baseConfig = {
-          autoLoadEntities: true,
-          synchronize: configService.get<string>('DB_SYNCHRONIZE') === 'true',
-        };
-
-        // Si es Postgres (o si dbType NO está definido, forzamos Postgres en el servidor)
-        if (dbType === 'postgres' || !dbType) {
-          return {
-            ...baseConfig,
-            type: 'postgres' as const,
-            host: configService.get<string>('DB_HOST') || 'localhost',
-            port: parseInt(configService.get<string>('DB_PORT') || '5432'),
-            username: configService.get<string>('DB_USERNAME') || 'postgres',
-            password: configService.get<string>('DB_PASSWORD'),
-            database: configService.get<string>('DB_DATABASE') || 'taller_mecanico',
-          };
-        }
-
-        // SQLite solo si se especifica explícitamente
-        return {
-          ...baseConfig,
-          type: 'sqlite' as const,
-          database: configService.get<string>('DB_DATABASE') || './taller.db',
-        };
-      },
       inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres',
+        host: configService.get<string>('DB_HOST') || 'localhost',
+        port: parseInt(configService.get<string>('DB_PORT') || '5432', 10),
+        username: configService.get<string>('DB_USERNAME') || 'postgres',
+        password: configService.get<string>('DB_PASSWORD'),
+        database: configService.get<string>('DB_DATABASE') || 'taller_mecanico',
+        autoLoadEntities: true,
+        // synchronize debe ser false en producción para evitar pérdida de datos
+        synchronize: configService.get<string>('DB_SYNCHRONIZE') === 'true',
+        // Opcional: Logging para ver qué consultas fallan en consola
+        logging: configService.get<string>('NODE_ENV') === 'development',
+      }),
     }),
 
     // 3. TUS MÓDULOS DEL SISTEMA
