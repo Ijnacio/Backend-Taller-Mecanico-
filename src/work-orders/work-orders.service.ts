@@ -106,8 +106,15 @@ export class WorkOrdersService {
         vehicle.kilometraje = vehiculoDto.kilometraje;
       }
 
-      // ASOCIAR VEHÍCULO AL CLIENTE (si no tiene dueño o es diferente)
-      if (!vehicle.cliente || vehicle.cliente.id !== client.id) {
+      // VALIDAR QUE EL VEHÍCULO PERTENEZCA AL CLIENTE CORRECTO
+      if (vehicle.cliente && vehicle.cliente.id !== client.id) {
+        throw new BadRequestException(
+          `La patente ${patenteNormalizada} ya está registrada para otro cliente (${vehicle.cliente.nombre}). No se puede reasignar.`
+        );
+      }
+
+      // ASOCIAR VEHÍCULO AL CLIENTE (solo si no tiene dueño)
+      if (!vehicle.cliente) {
         vehicle.cliente = client;
       }
 

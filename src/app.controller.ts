@@ -9,4 +9,9 @@ export class AppController {
   getHello(): string {
     return this.appService.getHello();
   }
+
+  @Get('debug-discord')
+  testDiscord() {
+    throw new Error('TEST PRO: El filtro de Discord está funcionando perfectamente');
+  }
 }
