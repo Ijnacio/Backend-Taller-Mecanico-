@@ -14,7 +14,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
       secretOrKey:
-        configService.get<string>('JWT_SECRET') ||
+        configService.get<string>('JWT_SECRET') 
         'SECRET_KEY_SUPER_SEGURA_CAMBIAR_EN_PRODUCCION',
     });
   }
@@ -22,7 +22,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(payload: { sub: string }) {
     const user = await this.usersService.findById(payload.sub);
 
-    if (!user || !user.isActive) {
+    if (!user 
+ !user.isActive) {
       throw new UnauthorizedException('Usuario no autorizado');
     }
 
@@ -32,6 +33,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       rut: user.rut,
       role: user.role,
       nombre: user.nombre,
+      is_support: user.is_support || false,
     };
   }
 }

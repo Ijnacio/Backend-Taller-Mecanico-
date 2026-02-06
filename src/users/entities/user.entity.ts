@@ -30,6 +30,9 @@ export class User {
   @Column({ default: true })
   isActive: boolean;
 
+  @Column({ default: false })
+  is_support: boolean; // Usuarios ocultos de soporte técnico
+
   @CreateDateColumn()
   createdAt: Date;
 }
