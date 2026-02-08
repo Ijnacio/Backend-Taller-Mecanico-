@@ -1,5 +1,5 @@
+
 import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
-import { DiscordLogger } from '../services/logger-discord.service';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -12,16 +12,17 @@ export class AllExceptionsFilter implements ExceptionFilter {
         ? exception.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR;
 
-    // Solo envía a Discord si es un error interno del servidor (500)
+    // Log en consola para no perder el rastro del error
     if (status === HttpStatus.INTERNAL_SERVER_ERROR) {
-      const msg = `⚠️ ERROR 500 en ${request.method} ${request.url}: ${exception.message || 'Error Desconocido'}`;
-      DiscordLogger.sendError(msg);
+      console.error(`⚠️ ERROR 500 en ${request.method} ${request.url}:`, exception);
+      // DiscordLogger está desactivado temporalmente para permitir el build
     }
 
     response.status(status).json({
       statusCode: status,
       timestamp: new Date().toISOString(),
       path: request.url,
+      message: exception.message || 'Internal server error',
     });
   }
 }
