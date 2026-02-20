@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get, Req, Request } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -27,7 +27,7 @@ export class AuthController {
   @ApiOperation({
     summary: 'Iniciar sesión y obtener token JWT',
     description: `
-Autentica al usuario con RUT y contraseña, devolviendo un token JWT válido por 8 horas.
+Autentica al usuario con RUT y contraseña, devolviendo un token JWT válido.
 
 **Formato de RUT:**
 - Acepta con o sin puntos/guiones: "11.111.111-1" o "111111111"
@@ -35,18 +35,16 @@ Autentica al usuario con RUT y contraseña, devolviendo un token JWT válido por
 
 **Token JWT:**
 - Incluir en header: \`Authorization: Bearer <token>\`
-- Expira en 8 horas (configurable en .env)
+- Expira en el tiempo configurado en .env (ej: 7d)
     `,
   })
   @ApiBody({ type: LoginDto })
   @ApiResponse({
     status: 200,
-    description:
-      'Login exitoso. Retorna access_token para usar en peticiones autenticadas.',
+    description: 'Login exitoso. Retorna access_token y datos básicos del usuario.',
     schema: {
       example: {
-        access_token:
-          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1dWlkIiwicnV0IjoiMTExMTExMTExIiwicm9sZSI6IkFETUlOIn0...',
+        access_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
         user: {
           id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
           rut: '111111111',
@@ -56,31 +54,7 @@ Autentica al usuario con RUT y contraseña, devolviendo un token JWT válido por
       },
     },
   })
-  @ApiResponse({
-    status: 401,
-    description: 'Credenciales inválidas o usuario desactivado',
-    schema: {
-      example: {
-        statusCode: 401,
-        message: 'Credenciales inválidas',
-        error: 'Unauthorized',
-      },
-    },
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Error de validación en los datos enviados',
-    schema: {
-      example: {
-        statusCode: 400,
-        message: [
-          'rut should not be empty',
-          'password must be longer than or equal to 6 characters',
-        ],
-        error: 'Bad Request',
-      },
-    },
-  })
+  @ApiResponse({ status: 401, description: 'Credenciales inválidas' })
   async login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
   }
@@ -89,61 +63,7 @@ Autentica al usuario con RUT y contraseña, devolviendo un token JWT válido por
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
-  @ApiOperation({
-    summary: 'Registrar nuevo usuario (Solo ADMIN)',
-    description: `
-⚠️ **Requiere rol ADMIN**
-
-Crea un nuevo usuario en el sistema con rol ADMIN o WORKER.
-
-**Validaciones:**
-- RUT debe ser único (no repetido)
-- Contraseña mínimo 6 caracteres
-- Rol por defecto: WORKER
-    `,
-  })
-  @ApiBody({ type: CreateUserDto })
-  @ApiResponse({
-    status: 201,
-    description: 'Usuario creado exitosamente',
-    schema: {
-      example: {
-        message: 'Usuario creado exitosamente',
-        user: {
-          id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
-          rut: '12345678-9',
-          nombre: 'Juan Pérez',
-          role: 'WORKER',
-        },
-      },
-    },
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'RUT ya existe o datos inválidos',
-    schema: {
-      example: {
-        statusCode: 400,
-        message: 'El RUT ya está registrado',
-        error: 'Bad Request',
-      },
-    },
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Token JWT no proporcionado o inválido',
-  })
-  @ApiResponse({
-    status: 403,
-    description: 'Usuario no tiene rol ADMIN - Acceso denegado',
-    schema: {
-      example: {
-        statusCode: 403,
-        message: 'Forbidden resource',
-        error: 'Forbidden',
-      },
-    },
-  })
+  @ApiOperation({ summary: 'Registrar nuevo usuario (Solo ADMIN)' })
   async register(@Body() createUserDto: CreateUserDto) {
     const user = await this.usersService.create(createUserDto);
     return {
@@ -155,5 +75,22 @@ Crea un nuevo usuario en el sistema con rol ADMIN o WORKER.
         role: user.role,
       },
     };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  @ApiBearerAuth()
+  @ApiOperation({ 
+    summary: 'Obtener perfil del usuario actual',
+    description: 'Valida el token JWT y retorna los datos del usuario logueado. Esencial para mantener la sesión tras F5.'
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Retorna los datos del usuario dueño del token.',
+  })
+  @ApiResponse({ status: 401, description: 'Token inválido o expirado' })
+  getProfile(@Request() req) {
+    // req.user viene inyectado por el JwtAuthGuard/JwtStrategy
+    return req.user;
   }
 }

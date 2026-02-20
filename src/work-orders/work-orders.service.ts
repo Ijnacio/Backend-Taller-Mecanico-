@@ -244,19 +244,98 @@ export class WorkOrdersService {
   }
 
   async update(id: string, updateWorkOrderDto: UpdateWorkOrderDto) {
-    const order = await this.findOne(id);
-    if (!order) {
-      throw new BadRequestException(`Orden de trabajo con ID ${id} no encontrada`);
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      // 1. Buscar la orden actual con sus items y productos asociados
+      const order = await queryRunner.manager.findOne(WorkOrder, {
+        where: { id },
+        relations: ['detalles', 'detalles.producto'],
+      });
+
+      if (!order) {
+        throw new BadRequestException(`Orden de trabajo con ID ${id} no encontrada`);
+      }
+
+      const { items, cliente, vehiculo, ...simpleData } = updateWorkOrderDto;
+
+      // 2. REVERTIR STOCK DE LOS PRODUCTOS ANTERIORES
+      // Esto es lo que "devuelve" los frenos de prueba al estante
+      for (const oldDetail of order.detalles) {
+        if (oldDetail.producto) {
+          oldDetail.producto.stock_actual += oldDetail.cantidad;
+          await queryRunner.manager.save(Product, oldDetail.producto);
+        }
+      }
+
+      // 3. BORRAR DETALLES ANTIGUOS
+      // Limpiamos la lista para poner la nueva
+      await queryRunner.manager.delete(WorkOrderDetail, { workOrder: { id: order.id } });
+
+      // 4. ACTUALIZAR CAMPOS SIMPLES (Papel, mecánicos, etc.)
+      Object.assign(order, simpleData);
+
+      // 5. PROCESAR NUEVOS ITEMS Y DESCONTAR NUEVO STOCK
+      let nuevoTotal = 0;
+      const nuevosDetalles: WorkOrderDetail[] = [];
+
+      if (items && items.length > 0) {
+        for (const item of items) {
+          const cantidadItem = item.cantidad_producto || item.cantidad || 1;
+          const detail = new WorkOrderDetail();
+          detail.servicio_nombre = item.servicio_nombre;
+          detail.descripcion = item.descripcion || '';
+          detail.precio = item.precio;
+          detail.cantidad = cantidadItem;
+          detail.workOrder = order;
+
+          if (item.product_sku) {
+            const product = await queryRunner.manager.findOne(Product, {
+              where: { sku: item.product_sku },
+            });
+
+            if (!product) {
+              throw new BadRequestException(`El producto SKU ${item.product_sku} no existe.`);
+            }
+
+            if (product.stock_actual < cantidadItem) {
+              throw new BadRequestException(`Stock insuficiente para ${product.nombre}.`);
+            }
+
+            // Descontamos el stock real ahora
+            product.stock_actual -= cantidadItem;
+            await queryRunner.manager.save(Product, product);
+            detail.producto = product;
+          }
+
+          nuevosDetalles.push(detail);
+          nuevoTotal += item.precio * cantidadItem;
+        }
+        order.detalles = nuevosDetalles;
+        order.total_cobrado = nuevoTotal;
+      }
+
+      // 6. GUARDAR TODO
+      await queryRunner.manager.save(order);
+      if (nuevosDetalles.length > 0) {
+        await queryRunner.manager.save(WorkOrderDetail, nuevosDetalles);
+      }
+
+      await queryRunner.commitTransaction();
+      
+      return {
+        message: 'Orden actualizada exitosamente y stock ajustado',
+        orden_id: order.id,
+        total: order.total_cobrado,
+      };
+
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
     }
-
-    // Actualizar campos simples si vienen
-    if (updateWorkOrderDto.numero_orden_papel) order.numero_orden_papel = updateWorkOrderDto.numero_orden_papel;
-    if (updateWorkOrderDto.realizado_por) order.realizado_por = updateWorkOrderDto.realizado_por;
-    if (updateWorkOrderDto.revisado_por) order.revisado_por = updateWorkOrderDto.revisado_por;
-
-    // NOTA: No implementamos la actualización compleja de items/stock aquí para mantenerlo simple por ahora
-    // Si se requiere editar items, se debería hacer un mecanismo de anulación/re-creación o lógica compleja de inventario.
-
-    return await this.dataSource.manager.save(order);
   }
-}
+} 

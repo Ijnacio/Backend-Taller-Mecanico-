@@ -27,13 +27,14 @@ async function seedProduction() {
 
   const dataSource = new DataSource({
     type: 'postgres',
-    host: process.env.DB_HOST || '127.0.0.1', // Prioridad a la variable de entorno
+    host: process.env.DB_HOST || '127.0.0.1', 
     port: parseInt(process.env.DB_PORT || '5432'),
     username: process.env.DB_USERNAME || 'postgres',
     password: process.env.DB_PASSWORD,
     database: process.env.DB_DATABASE || 'taller_db',
     entities: [__dirname + '/**/*.entity{.ts,.js}'],
-    synchronize: false, // ¡SEGURIDAD! No altera la estructura, solo datos
+    // 👇 ESTO ES LO QUE ARREGLA EL ERROR "COLUMN DOES NOT EXIST"
+    synchronize: true, // ✅ TRUE: Permite crear tablas y columnas si no existen
   });
 
   try {
@@ -71,13 +72,10 @@ async function seedProduction() {
         console.log(`✨ CREADO: ${nombre} | RUT: ${rutLimpio} | Rol: ${rol} | Oculto: ${esSoporte}`);
       } else {
         // ACTUALIZAR SI YA EXISTE
-        // Solo actualizamos la contraseña si es cuenta de soporte (para recuperar acceso)
-        // A la dueña NO le cambiamos la contraseña para no bloquearla
         if (esSoporte) {
           usuario.password = hash;
         }
         
-        // Siempre aseguramos que los permisos y roles sean los correctos
         usuario.is_support = esSoporte;
         usuario.role = rol;
         usuario.isActive = true;
@@ -99,12 +97,12 @@ async function seedProduction() {
       'Soporte2026!',      // TU CLAVE
       'Soporte Admin',     // NOMBRE
       UserRole.ADMIN,      // ROL
-      true                 // OCULTO (is_support = true)
+      true                 // OCULTO
     );
 
     // Tu cuenta Worker (Para pruebas o compañero)
     await gestionarUsuario(
-      '88.888.888-8',      // RUT SECUNDARIO (Inventado o de compañero)
+      '88.888.888-8',      // RUT SECUNDARIO
       'Soporte2026!',
       'Soporte Worker',
       UserRole.WORKER,
@@ -121,7 +119,7 @@ async function seedProduction() {
       'admin123',           // CLAVE DUEÑA
       'Administradora',
       UserRole.ADMIN,
-      false                 // VISIBLE (is_support = false)
+      false                 // VISIBLE
     );
 
     // El Mecánico
