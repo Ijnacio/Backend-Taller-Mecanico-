@@ -153,7 +153,7 @@ export class CreateWorkOrderDto {
   @ApiPropertyOptional({
     example: '2025-11-15',
     description:
-      'Fecha real de la orden (YYYY-MM-DD). OPCIONAL: solo usar si se necesita registrar una orden con fecha distinta a la actual (ej: talones físicos históricos). Si no se envía, se usa la fecha y hora del servidor.',
+      'Fecha real de la orden (YYYY-MM-DD). OPCIONAL: solo usar si se necesita registrar una orden con fecha distinta a la actual. Si no se envía, se usa la fecha del servidor.',
   })
   @IsDateString()
   @IsOptional()
