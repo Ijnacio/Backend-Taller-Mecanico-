@@ -23,7 +23,7 @@ export class WorkOrder {
   estado: string; // FINALIZADA, EN_PROCESO, CANCELADA
 
   @Index()
-  @CreateDateColumn()
+  @Column({ type: 'timestamptz', nullable: true })
   fecha_ingreso: Date;
 
   @Column('int', { default: 0 })

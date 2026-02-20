@@ -42,6 +42,7 @@ export class WorkOrdersService {
         numero_orden_papel,
         realizado_por,
         revisado_por,
+        fecha_ingreso,
       } = createWorkOrderDto;
 
       // ---------------------------------------------------------
@@ -131,7 +132,8 @@ export class WorkOrdersService {
       order.realizado_por = realizado_por;
       order.revisado_por = revisado_por;
       order.estado = 'FINALIZADA';
-      order.fecha_ingreso = new Date();
+      // Si se envía fecha_ingreso se usa esa; si no, la fecha/hora actual del servidor
+      order.fecha_ingreso = fecha_ingreso ? new Date(fecha_ingreso) : new Date();
       order.detalles = [];
 
       let totalOrden = 0;
@@ -324,7 +326,7 @@ export class WorkOrdersService {
       }
 
       await queryRunner.commitTransaction();
-      
+
       return {
         message: 'Orden actualizada exitosamente y stock ajustado',
         orden_id: order.id,

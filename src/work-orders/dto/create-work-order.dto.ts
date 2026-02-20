@@ -5,6 +5,7 @@ import {
   ValidateNested,
   IsOptional,
   IsEmail,
+  IsDateString,
   Min,
 } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -148,6 +149,15 @@ export class CreateWorkOrderDto {
   @IsString()
   @IsOptional()
   revisado_por: string;
+
+  @ApiPropertyOptional({
+    example: '2025-11-15',
+    description:
+      'Fecha real de la orden (YYYY-MM-DD). OPCIONAL: solo usar si se necesita registrar una orden con fecha distinta a la actual (ej: talones físicos históricos). Si no se envía, se usa la fecha y hora del servidor.',
+  })
+  @IsDateString()
+  @IsOptional()
+  fecha_ingreso?: string;
 
   @ApiProperty({
     description:
